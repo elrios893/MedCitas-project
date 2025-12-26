@@ -1,0 +1,298 @@
+﻿@model MedCitas.Core.Entities.Admin
+
+@{
+    ViewData["Title"] = "Registrar Administrador";
+}
+
+<div class="container mt-5">
+    <div class="row justify-content-center">
+        <div class="col-md-8">
+            <!-- Breadcrumb -->
+            <nav aria-label="breadcrumb">
+                <ol class="breadcrumb">
+                    <li class="breadcrumb-item">
+                        <a asp-action="Dashboard">Dashboard</a>
+                    </li>
+                    <li class="breadcrumb-item">
+                        <a asp-action="ListarUsuarios">Usuarios</a>
+                    </li>
+                    <li class="breadcrumb-item active" aria-current="page">Registrar Administrador</li>
+                </ol>
+            </nav>
+
+            <div class="card shadow-lg border-0">
+                <div class="card-header bg-warning text-dark">
+                    <h3 class="mb-0">
+                        <i class="bi bi-shield-fill-plus"></i> Registrar Nuevo Administrador
+                    </h3>
+                </div>
+                <div class="card-body">
+                    @if (ViewBag.Error != null)
+                    {
+                        <div class="alert alert-danger alert-dismissible fade show" role="alert">
+                            <i class="bi bi-exclamation-triangle-fill"></i>
+                            <strong>Error:</strong> @ViewBag.Error
+                            <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+                        </div>
+                    }
+
+                    <div class="alert alert-info">
+                        <i class="bi bi-info-circle"></i>
+                        <strong>Información:</strong> El nuevo administrador recibirá un código OTP en su correo electrónico para verificar su cuenta.
+                    </div>
+
+                    <form asp-action="RegistrarAdmin" method="post">
+                        <div asp-validation-summary="All" class="text-danger mb-3"></div>
+
+                        <!-- Datos Personales -->
+                        <div class="row mb-4">
+                            <div class="col-12">
+                                <h5 class="border-bottom pb-2 mb-3">
+                                    <i class="bi bi-person-badge"></i> Datos Personales
+                                </h5>
+                            </div>
+
+                            <div class="col-md-12 mb-3">
+                                <label asp-for="NombreCompleto" class="form-label">
+                                    Nombre Completo <span class="text-danger">*</span>
+                                </label>
+                                <div class="input-group">
+                                    <span class="input-group-text">
+                                        <i class="bi bi-person"></i>
+                                    </span>
+                                    <input asp-for="NombreCompleto"
+                                           class="form-control"
+                                           placeholder="Ej: María García López"
+                                           required />
+                                </div>
+                                <span asp-validation-for="NombreCompleto" class="text-danger"></span>
+                            </div>
+                        </div>
+
+                        <!-- Datos de Contacto -->
+                        <div class="row mb-4">
+                            <div class="col-12">
+                                <h5 class="border-bottom pb-2 mb-3">
+                                    <i class="bi bi-telephone"></i> Datos de Contacto
+                                </h5>
+                            </div>
+
+                            <div class="col-md-6 mb-3">
+                                <label asp-for="Telefono" class="form-label">
+                                    Teléfono <span class="text-danger">*</span>
+                                </label>
+                                <div class="input-group">
+                                    <span class="input-group-text">
+                                        <i class="bi bi-telephone-fill"></i>
+                                    </span>
+                                    <input asp-for="Telefono"
+                                           class="form-control"
+                                           placeholder="Ej: 3012345678"
+                                           maxlength="15"
+                                           pattern="[0-9]{7,15}"
+                                           required />
+                                </div>
+                                <span asp-validation-for="Telefono" class="text-danger"></span>
+                                <small class="form-text text-muted">Entre 7 y 15 dígitos</small>
+                            </div>
+
+                            <div class="col-md-6 mb-3">
+                                <label asp-for="CorreoElectronico" class="form-label">
+                                    Correo Electrónico <span class="text-danger">*</span>
+                                </label>
+                                <div class="input-group">
+                                    <span class="input-group-text">
+                                        <i class="bi bi-envelope-fill"></i>
+                                    </span>
+                                    <input asp-for="CorreoElectronico"
+                                           type="email"
+                                           class="form-control"
+                                           placeholder="admin@medcitas.com"
+                                           required />
+                                </div>
+                                <span asp-validation-for="CorreoElectronico" class="text-danger"></span>
+                            </div>
+                        </div>
+
+                        <!-- Seguridad -->
+                        <div class="row mb-4">
+                            <div class="col-12">
+                                <h5 class="border-bottom pb-2 mb-3">
+                                    <i class="bi bi-shield-lock"></i> Seguridad
+                                </h5>
+                            </div>
+
+                            <div class="col-md-6 mb-3">
+                                <label for="password" class="form-label">
+                                    Contraseña <span class="text-danger">*</span>
+                                </label>
+                                <div class="input-group">
+                                    <span class="input-group-text">
+                                        <i class="bi bi-lock-fill"></i>
+                                    </span>
+                                    <input type="password"
+                                           name="password"
+                                           id="password"
+                                           class="form-control"
+                                           placeholder="Mínimo 8 caracteres"
+                                           required />
+                                    <button class="btn btn-outline-secondary"
+                                            type="button"
+                                            id="togglePassword">
+                                        <i class="bi bi-eye"></i>
+                                    </button>
+                                </div>
+                                <small class="form-text text-muted">
+                                    Debe contener: mayúsculas, minúsculas, números y símbolos
+                                </small>
+                            </div>
+
+                            <div class="col-md-6 mb-3">
+                                <label for="confirmarPassword" class="form-label">
+                                    Confirmar Contraseña <span class="text-danger">*</span>
+                                </label>
+                                <div class="input-group">
+                                    <span class="input-group-text">
+                                        <i class="bi bi-lock-fill"></i>
+                                    </span>
+                                    <input type="password"
+                                           name="confirmarPassword"
+                                           id="confirmarPassword"
+                                           class="form-control"
+                                           placeholder="Repita la contraseña"
+                                           required />
+                                    <button class="btn btn-outline-secondary"
+                                            type="button"
+                                            id="toggleConfirmPassword">
+                                        <i class="bi bi-eye"></i>
+                                    </button>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Indicador de Fortaleza de Contraseña -->
+                        <div class="row mb-4">
+                            <div class="col-12">
+                                <div class="password-strength" id="passwordStrength">
+                                    <div class="password-strength-bar"></div>
+                                </div>
+                                <small class="text-muted" id="passwordStrengthText"></small>
+                            </div>
+                        </div>
+
+                        <!-- Botones -->
+                        <div class="d-grid gap-2">
+                            <button type="submit" class="btn btn-warning btn-lg">
+                                <i class="bi bi-shield-fill-check"></i> Registrar Administrador
+                            </button>
+                            <a asp-action="Dashboard" class="btn btn-outline-secondary">
+                                <i class="bi bi-arrow-left"></i> Volver al Dashboard
+                            </a>
+                        </div>
+                    </form>
+                </div>
+            </div>
+
+            <!-- Información Adicional -->
+            <div class="card border-0 shadow-sm mt-3">
+                <div class="card-body">
+                    <h6 class="fw-bold">
+                        <i class="bi bi-info-circle-fill text-info"></i> Información Importante
+                    </h6>
+                    <ul class="mb-0">
+                        <li>El administrador tendrá acceso completo al sistema</li>
+                        <li>Podrá registrar pacientes, médicos y otros administradores</li>
+                        <li>Recibirá un código OTP para verificar su cuenta</li>
+                        <li>La contraseña se encripta con BCrypt antes de almacenarse</li>
+                    </ul>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+    <partial name="_ValidationScriptsPartial" />
+
+    <script src="~/js/password-toggle.js"></script>
+}
+
+@section Styles {
+    <style>
+        .password-strength {
+            height: 5px;
+            background-color: #e9ecef;
+            border-radius: 3px;
+            overflow: hidden;
+            margin-bottom: 5px;
+        }
+
+        .password-strength-bar {
+            height: 100%;
+            transition: width 0.3s ease, background-color 0.3s ease;
+            width: 0%;
+        }
+
+            .password-strength-bar.weak {
+                background-color: #dc3545;
+            }
+
+            .password-strength-bar.medium {
+                background-color: #ffc107;
+            }
+
+            .password-strength-bar.strong {
+                background-color: #28a745;
+            }
+
+        .card {
+            border-radius: 10px;
+        }
+
+        .card-header {
+            border-radius: 10px 10px 0 0 !important;
+            padding: 1.5rem;
+        }
+
+        .input-group-text {
+            background-color: #f8f9fa;
+            border-right: none;
+        }
+
+        .form-control {
+            border-left: none;
+        }
+
+            .form-control:focus {
+                box-shadow: none;
+                border-color: #ced4da;
+            }
+
+        .input-group:focus-within .input-group-text {
+            border-color: #86b7fe;
+            background-color: #e7f1ff;
+        }
+
+        .input-group:focus-within .form-control {
+            border-color: #86b7fe;
+        }
+
+        .btn-warning {
+            background-color: #ffc107;
+            border-color: #ffc107;
+            color: #000;
+        }
+
+            .btn-warning:hover {
+                background-color: #ffca2c;
+                border-color: #ffc720;
+                color: #000;
+            }
+
+        .breadcrumb {
+            background-color: transparent;
+            padding: 0;
+            margin-bottom: 1rem;
+        }
+    </style>
+}

@@ -1,0 +1,38 @@
+﻿.card {
+    border-radius: 10px;
+}
+
+.card-header {
+    border-radius: 10px 10px 0 0 !important;
+    padding: 1.5rem;
+}
+
+.input-group-text {
+    background-color: #f8f9fa;
+    border-right: none;
+}
+
+.form-control, .form-select {
+    border-left: none;
+}
+
+    .form-control:focus, .form-select:focus {
+        box-shadow: none;
+        border-color: #ced4da;
+    }
+
+.input-group:focus-within .input-group-text {
+    border-color: #86b7fe;
+    background-color: #e7f1ff;
+}
+
+.input-group:focus-within .form-control,
+.input-group:focus-within .form-select {
+    border-color: #86b7fe;
+}
+
+.breadcrumb {
+    background-color: transparent;
+    padding: 0;
+    margin-bottom: 1rem;
+}

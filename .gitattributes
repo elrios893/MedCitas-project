@@ -1,0 +1,27 @@
+# Normalización automática de finales de línea
+* text=auto
+
+# Forzar UTF-8 para archivos de texto
+*.cs     text eol=lf encoding=utf-8
+*.cshtml text eol=lf encoding=utf-8
+*.razor  text eol=lf encoding=utf-8
+*.css    text eol=lf encoding=utf-8
+*.js     text eol=lf encoding=utf-8
+*.json   text eol=lf encoding=utf-8
+*.html   text eol=lf encoding=utf-8
+*.md     text eol=lf encoding=utf-8
+*.xml    text eol=lf encoding=utf-8
+*.config text eol=lf encoding=utf-8
+*.txt    text eol=lf encoding=utf-8
+*.sql    text eol=lf encoding=utf-8
+
+# Archivos binarios
+*.dll binary
+*.exe binary
+*.png binary
+*.jpg binary
+*.jpeg binary
+*.gif binary
+*.ico binary
+*.pdf binary
+*.zip binary

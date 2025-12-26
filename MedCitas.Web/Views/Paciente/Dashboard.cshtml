@@ -1,0 +1,437 @@
+﻿@{
+    ViewData["Title"] = "Dashboard - Portal de Pacientes";
+}
+
+<div class="container-fluid dashboard-container mt-4">
+    <!-- Header de Bienvenida -->
+    <div class="row mb-4">
+        <div class="col-12">
+            <div class="welcome-card">
+                <div class="welcome-content">
+                    <h1 class="display-5 fw-bold mb-2">
+                        ¡Bienvenido, @ViewBag.PacienteNombre! ??
+                    </h1>
+                    <p class="lead mb-0"> @* text-muted *@
+                        Gestiona tus citas médicas de forma rápida y sencilla
+                    </p>
+                </div>
+                <div class="welcome-icon">
+                    <i class="fas fa-hospital-user fa-4x text-primary opacity-50"></i>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    @if (ViewBag.Mensaje != null)
+    {
+        <div class="row mb-4">
+            <div class="col-12">
+                <div class="alert alert-success alert-dismissible fade show" role="alert">
+                    <i class="fas fa-check-circle me-2"></i>
+                    @ViewBag.Mensaje
+                    <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+                </div>
+            </div>
+        </div>
+    }
+
+    <!-- Acciones Rápidas -->
+    <div class="row mb-4">
+        <div class="col-12">
+            <h4 class="mb-3">
+                <i class="fas fa-bolt text-warning me-2"></i>
+                Acciones Rápidas
+            </h4>
+        </div>
+
+        <!-- Agendar Cita -->
+        <div class="col-lg-4 col-md-6 mb-4">
+            <div class="action-card card h-100 border-0 shadow-sm hover-lift">
+                <div class="card-body text-center p-4">
+                    <div class="action-icon mb-3">
+                        <div class="icon-circle bg-primary-soft">
+                            <i class="fas fa-calendar-plus fa-3x text-primary"></i>
+                        </div>
+                    </div>
+                    <h5 class="card-title fw-bold mb-2">Agendar Cita</h5>
+                    <p class="card-text text-muted mb-4">
+                        Reserva tu cita médica con tu especialista preferido
+                    </p>
+                    <a asp-controller="Cita" asp-action="Agendar" class="btn btn-primary btn-lg w-100">
+                        <i class="fas fa-plus-circle me-2"></i>
+                        Nueva Cita
+                    </a>
+                </div>
+            </div>
+        </div>
+
+        <!-- Ver Mis Citas -->
+        <div class="col-lg-4 col-md-6 mb-4">
+            <div class="action-card card h-100 border-0 shadow-sm hover-lift">
+                <div class="card-body text-center p-4">
+                    <div class="action-icon mb-3">
+                        <div class="icon-circle bg-success-soft">
+                            <i class="fas fa-calendar-check fa-3x text-success"></i>
+                        </div>
+                    </div>
+                    <h5 class="card-title fw-bold mb-2">Mis Citas</h5>
+                    <p class="card-text text-muted mb-4">
+                        Consulta, filtra y gestiona todas tus citas médicas
+                    </p>
+                    <a asp-controller="Cita" asp-action="MisCitas" class="btn btn-success btn-lg w-100">
+                        <i class="fas fa-list me-2"></i>
+                        Ver Citas
+                    </a>
+                </div>
+            </div>
+        </div>
+
+        <!-- Editar Perfil -->
+        <div class="col-lg-4 col-md-6 mb-4">
+            <div class="action-card card h-100 border-0 shadow-sm hover-lift">
+                <div class="card-body text-center p-4">
+                    <div class="action-icon mb-3">
+                        <div class="icon-circle bg-info-soft">
+                            <i class="fas fa-user-edit fa-3x text-info"></i>
+                        </div>
+                    </div>
+                    <h5 class="card-title fw-bold mb-2">Mi Perfil</h5>
+                    <p class="card-text text-muted mb-4">
+                        Actualiza tus datos personales y de contacto
+                    </p>
+                    <a asp-controller="Paciente" asp-action="Perfil" class="btn btn-info btn-lg w-100">
+                        <i class="fas fa-edit me-2"></i>
+                        Editar Perfil
+                    </a>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Información Útil -->
+    <div class="row">
+        <div class="col-12">
+            <h4 class="mb-3">
+                <i class="fas fa-info-circle text-primary me-2"></i>
+                Información Útil
+            </h4>
+        </div>
+
+        <!-- Próximas Citas -->
+        <div class="col-lg-6 mb-4">
+            <div class="card border-0 shadow-sm h-100">
+                <div class="card-header bg-white border-bottom">
+                    <h5 class="mb-0">
+                        <i class="fas fa-clock text-warning me-2"></i>
+                        Recordatorios
+                    </h5>
+                </div>
+                <div class="card-body">
+                    <div class="info-item">
+                        <i class="fas fa-check-circle text-success me-2"></i>
+                        <span>Puedes agendar citas con anticipación mínima de 1 día</span>
+                    </div>
+                    <div class="info-item">
+                        <i class="fas fa-exclamation-triangle text-warning me-2"></i>
+                        <span>Cancela con más de 24 horas de anticipación</span>
+                    </div>
+                    <div class="info-item">
+                        <i class="fas fa-envelope text-info me-2"></i>
+                        <span>Recibirás confirmaciones por correo electrónico</span>
+                    </div>
+                    <div class="info-item">
+                        <i class="fas fa-calendar-alt text-primary me-2"></i>
+                        <span>Horarios disponibles: Lunes a Viernes, 8:00 AM - 6:00 PM</span>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Especialidades Disponibles -->
+        <div class="col-lg-6 mb-4">
+            <div class="card border-0 shadow-sm h-100">
+                <div class="card-header bg-white border-bottom">
+                    <h5 class="mb-0">
+                        <i class="fas fa-stethoscope text-primary me-2"></i>
+                        Especialidades Disponibles
+                    </h5>
+                </div>
+                <div class="card-body">
+                    <div class="specialty-grid">
+                        <div class="specialty-item">
+                            <i class="fas fa-heartbeat text-danger"></i>
+                            <span>Cardiología</span>
+                        </div>
+                        <div class="specialty-item">
+                            <i class="fas fa-user-md text-primary"></i>
+                            <span>Medicina General</span>
+                        </div>
+                        <div class="specialty-item">
+                            <i class="fas fa-child text-info"></i>
+                            <span>Pediatría</span>
+                        </div>
+                        <div class="specialty-item">
+                            <i class="fas fa-hand-holding-medical text-success"></i>
+                            <span>Dermatología</span>
+                        </div>
+                        <div class="specialty-item">
+                            <i class="fas fa-female text-pink"></i>
+                            <span>Ginecología</span>
+                        </div>
+                        <div class="specialty-item">
+                            <i class="fas fa-eye text-secondary"></i>
+                            <span>Oftalmología</span>
+                        </div>
+                        <div class="specialty-item">
+                            <i class="fas fa-bone text-warning"></i>
+                            <span>Traumatología</span>
+                        </div>
+                        <div class="specialty-item">
+                            <i class="fas fa-brain text-purple"></i>
+                            <span>Psicología</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Footer de Acciones -->
+    <div class="row mt-4">
+        <div class="col-12">
+            <div class="card border-0 shadow-sm bg-light">
+                <div class="card-body text-center py-4">
+                    <p class="mb-3 text-muted">
+                        <i class="fas fa-question-circle me-2"></i>
+                        ¿Necesitas ayuda?
+                    </p>
+                    <div class="d-flex justify-content-center gap-3 flex-wrap">
+                        <a href="#" class="btn btn-outline-primary">
+                            <i class="fas fa-phone me-2"></i>
+                            Contactar Soporte
+                        </a>
+                        <a href="#" class="btn btn-outline-secondary">
+                            <i class="fas fa-book me-2"></i>
+                            Guía de Usuario
+                        </a>
+                        <form asp-controller="Paciente" asp-action="Logout" method="post" class="d-inline">
+                            @Html.AntiForgeryToken()
+                            <button type="submit" class="btn btn-outline-danger">
+                                <i class="fas fa-sign-out-alt me-2"></i>
+                                Cerrar Sesión
+                            </button>
+                        </form>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+@section Styles {
+    <style>
+        /* Dashboard Container */
+        .dashboard-container {
+            max-width: 1400px;
+            margin: 0 auto;
+            padding: 20px;
+        }
+
+        /* Welcome Card */
+        .welcome-card {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            padding: 40px;
+            border-radius: 20px;
+            box-shadow: 0 10px 40px rgba(102, 126, 234, 0.3);
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            position: relative;
+            overflow: hidden;
+        }
+
+            .welcome-card::before {
+                content: '';
+                position: absolute;
+                top: -50%;
+                right: -10%;
+                width: 500px;
+                height: 500px;
+                background: rgba(255, 255, 255, 0.1);
+                border-radius: 50%;
+            }
+
+        .welcome-content {
+            position: relative;
+            z-index: 1;
+        }
+
+        .welcome-icon {
+            position: relative;
+            z-index: 1;
+        }
+
+        /* Action Cards */
+        .action-card {
+            transition: all 0.3s ease;
+            border-radius: 15px;
+            cursor: pointer;
+        }
+
+            .action-card:hover {
+                transform: translateY(-10px);
+                box-shadow: 0 20px 40px rgba(0, 0, 0, 0.15) !important;
+            }
+
+        .icon-circle {
+            width: 100px;
+            height: 100px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            margin: 0 auto;
+        }
+
+        .bg-primary-soft {
+            background-color: rgba(102, 126, 234, 0.1);
+        }
+
+        .bg-success-soft {
+            background-color: rgba(40, 167, 69, 0.1);
+        }
+
+        .bg-info-soft {
+            background-color: rgba(23, 162, 184, 0.1);
+        }
+
+        /* Info Items */
+        .info-item {
+            padding: 12px 0;
+            border-bottom: 1px solid #f0f0f0;
+            display: flex;
+            align-items: center;
+        }
+
+            .info-item:last-child {
+                border-bottom: none;
+            }
+
+        /* Specialty Grid */
+        .specialty-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(150px, 1fr));
+            gap: 15px;
+        }
+
+        .specialty-item {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            padding: 15px;
+            background: #f8f9fa;
+            border-radius: 10px;
+            text-align: center;
+            transition: all 0.3s ease;
+        }
+
+            .specialty-item:hover {
+                background: #e9ecef;
+                transform: scale(1.05);
+            }
+
+            .specialty-item i {
+                font-size: 2rem;
+                margin-bottom: 10px;
+            }
+
+            .specialty-item span {
+                font-size: 0.9rem;
+                font-weight: 500;
+            }
+
+        /* Custom Colors */
+        .text-pink {
+            color: #e83e8c !important;
+        }
+
+        .text-purple {
+            color: #6f42c1 !important;
+        }
+
+        /* Hover Lift */
+        .hover-lift {
+            transition: transform 0.3s ease, box-shadow 0.3s ease;
+        }
+
+        /* Responsive */
+        @@media (max-width: 768px) {
+            .welcome-card {
+                flex-direction: column;
+                text-align: center;
+                padding: 30px 20px;
+            }
+
+            .welcome-icon {
+                margin-top: 20px;
+            }
+
+            .specialty-grid {
+                grid-template-columns: repeat(2, 1fr);
+            }
+        }
+
+        @@media (max-width: 576px) {
+            .dashboard-container {
+                padding: 10px;
+            }
+
+            .welcome-card h1 {
+                font-size: 1.75rem;
+            }
+
+            .icon-circle {
+                width: 80px;
+                height: 80px;
+            }
+
+                .icon-circle i {
+                    font-size: 2rem !important;
+                }
+
+            .specialty-grid {
+                grid-template-columns: 1fr;
+            }
+        }
+    </style>
+}
+
+@section Scripts {
+    <script>
+                // Auto-dismiss de alertas
+                setTimeout(function() {
+        var alerts = document.querySelectorAll('.alert-dismissible');
+             alerts.forEach(function(alert) {
+            var bsAlert = new bootstrap.Alert(alert);
+         bsAlert.close();
+                    });
+          }, 5000);
+
+                // Animación de entrada
+             document.addEventListener('DOMContentLoaded', function() {
+           const cards = document.querySelectorAll('.action-card');
+              cards.forEach((card, index) => {
+              setTimeout(() => {
+                  card.style.opacity = '0';
+         card.style.transform = 'translateY(20px)';
+          setTimeout(() => {
+                     card.style.transition = 'all 0.5s ease';
+                    card.style.opacity = '1';
+            card.style.transform = 'translateY(0)';
+            }, 50);
+          }, index * 100);
+            });
+                });
+    </script>
+}

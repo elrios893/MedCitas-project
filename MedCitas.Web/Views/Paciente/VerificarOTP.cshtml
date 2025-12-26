@@ -1,0 +1,91 @@
+@{
+    ViewData["Title"] = "Verificar Código OTP";
+}
+
+<div class="container mt-5">
+    <div class="row justify-content-center">
+        <div class="col-md-6">
+            <div class="card">
+                <div class="card-header bg-primary text-white">
+                    <h3>Verificar tu cuenta</h3>
+                </div>
+                <div class="card-body">
+                    @if (!string.IsNullOrEmpty(ViewBag.Mensaje))
+                    {
+                        <div class="alert alert-info">
+                            @ViewBag.Mensaje
+                        </div>
+                    }
+
+                    @if (!string.IsNullOrEmpty(ViewBag.Error))
+                    {
+                        <div class="alert alert-danger">
+                            @ViewBag.Error
+                        </div>
+                    }
+
+                    <form asp-action="VerificarOTP" method="post">
+                        <div class="mb-3">
+                            <label for="correo" class="form-label">Correo Electrónico</label>
+                            <input type="email" 
+                                   class="form-control" 
+                                   id="correo" 
+                                   name="correo" 
+                                   value="@ViewBag.Correo" 
+                                   readonly />
+                        </div>
+
+                        <div class="mb-3">
+                            <label for="codigoOTP" class="form-label">Código de Verificación (6 dígitos)</label>
+                            <input type="text" 
+                                   class="form-control form-control-lg text-center" 
+                                   id="codigoOTP" 
+                                   name="codigoOTP" 
+                                   maxlength="6" 
+                                   placeholder="123456" 
+                                   required 
+                                   pattern="\d{6}"
+                                   autocomplete="off"
+                                   style="font-size: 24px; letter-spacing: 10px;" />
+                            <small class="form-text text-muted">
+                                Ingresa el código de 6 dígitos que recibiste por correo
+                            </small>
+                        </div>
+
+                        <button type="submit" class="btn btn-primary w-100 mb-3">
+                            <i class="bi bi-check-circle"></i> Verificar Código
+                        </button>
+                    </form>
+
+                    <hr />
+
+                    <form asp-action="ReenviarOTP" method="post">
+                        <input type="hidden" name="correo" value="@ViewBag.Correo" />
+                        <div class="text-center">
+                            <p class="text-muted">¿No recibiste el código?</p>
+                            <button type="submit" class="btn btn-link">
+                                Reenviar código
+                            </button>
+                        </div>
+                    </form>
+
+                    <div class="mt-3 text-center">
+                        <small class="text-muted">
+                            El código expira en 15 minutos
+                        </small>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+    // Auto-focus en el campo OTP
+    document.getElementById('codigoOTP').focus();
+    
+    // Solo permitir números
+    document.getElementById('codigoOTP').addEventListener('input', function(e) {
+        this.value = this.value.replace(/[^0-9]/g, '');
+    });
+</script>

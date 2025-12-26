@@ -1,0 +1,599 @@
+﻿@model IEnumerable<MedCitas.Core.DTOs.CitaDto>
+
+@{
+    ViewData["Title"] = "Calendario Médico";
+    var medicoNombre = ViewBag.MedicoNombre ?? "Doctor";
+}
+
+<div class="container-fluid py-4">
+    <div class="row mb-4">
+        <div class="col-12">
+            <div class="d-flex justify-content-between align-items-center">
+                <div>
+                    <h1 class="h3 mb-1">
+                        <i class="bi bi-calendar3"></i> Calendario de Citas
+                    </h1>
+                    <p class="text-muted mb-0">
+                        Gestiona tus citas médicas | Dr. @medicoNombre
+                    </p>
+                </div>
+                <div>
+                    <button type="button" class="btn btn-primary" data-bs-toggle="modal" data-bs-target="#filtrosModal">
+                        <i class="bi bi-funnel"></i> Filtros
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Estadísticas Rápidas -->
+    <div class="row mb-4">
+        <div class="col-md-3">
+            <div class="card border-0 shadow-sm">
+                <div class="card-body text-center">
+                    <div class="stat-icon bg-primary text-white mb-2">
+                        <i class="bi bi-calendar-check"></i>
+                    </div>
+                    <h3 class="mb-0" id="totalAgendadas">0</h3>
+                    <p class="text-muted mb-0">Agendadas</p>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-3">
+            <div class="card border-0 shadow-sm">
+                <div class="card-body text-center">
+                    <div class="stat-icon bg-success text-white mb-2">
+                        <i class="bi bi-check-circle"></i>
+                    </div>
+                    <h3 class="mb-0" id="totalCompletadas">0</h3>
+                    <p class="text-muted mb-0">Completadas</p>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-3">
+            <div class="card border-0 shadow-sm">
+                <div class="card-body text-center">
+                    <div class="stat-icon bg-danger text-white mb-2">
+                        <i class="bi bi-x-circle"></i>
+                    </div>
+                    <h3 class="mb-0" id="totalCanceladas">0</h3>
+                    <p class="text-muted mb-0">Canceladas</p>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-3">
+            <div class="card border-0 shadow-sm">
+                <div class="card-body text-center">
+                    <div class="stat-icon bg-warning text-white mb-2">
+                        <i class="bi bi-clock"></i>
+                    </div>
+                    <h3 class="mb-0" id="citasHoy">0</h3>
+                    <p class="text-muted mb-0">Hoy</p>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Calendario -->
+    <div class="row">
+        <div class="col-lg-9">
+            <div class="card border-0 shadow-sm">
+                <div class="card-body">
+                    <div id="calendar"></div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Panel Lateral con Citas del Día -->
+        <div class="col-lg-3">
+            <div class="card border-0 shadow-sm">
+                <div class="card-header bg-primary text-white">
+                    <h5 class="mb-0">
+                        <i class="bi bi-list-check"></i> Citas de Hoy
+                    </h5>
+                </div>
+                <div class="card-body p-0">
+                    <div id="citasHoyLista" class="list-group list-group-flush">
+                        <div class="text-center py-4 text-muted">
+                            <i class="bi bi-calendar-x fs-1"></i>
+                            <p class="mb-0">No hay citas programadas para hoy</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Leyenda -->
+            <div class="card border-0 shadow-sm mt-3">
+                <div class="card-header bg-light">
+                    <h6 class="mb-0">
+                        <i class="bi bi-info-circle"></i> Leyenda
+                    </h6>
+                </div>
+                <div class="card-body">
+                    <div class="d-flex align-items-center mb-2">
+                        <span class="badge bg-primary me-2">&nbsp;&nbsp;&nbsp;</span>
+                        <small>Agendada</small>
+                    </div>
+                    <div class="d-flex align-items-center mb-2">
+                        <span class="badge bg-success me-2">&nbsp;&nbsp;&nbsp;</span>
+                        <small>Completada</small>
+                    </div>
+                    <div class="d-flex align-items-center mb-2">
+                        <span class="badge bg-danger me-2">&nbsp;&nbsp;&nbsp;</span>
+                        <small>Cancelada</small>
+                    </div>
+                    <div class="d-flex align-items-center">
+                        <span class="badge bg-warning me-2">&nbsp;&nbsp;&nbsp;</span>
+                        <small>No Asistió</small>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Modal de Detalle de Cita -->
+<div class="modal fade" id="citaModal" tabindex="-1" aria-labelledby="citaModalLabel" aria-hidden="true">
+    <div class="modal-dialog modal-lg">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="citaModalLabel">
+                    <i class="bi bi-file-medical"></i> Detalle de Cita
+                </h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body" id="citaDetalle">
+                <!-- Contenido dinámico -->
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cerrar</button>
+                <button type="button" class="btn btn-success" id="btnCompletarCita" style="display:none;">
+                    <i class="bi bi-check-circle"></i> Marcar como Completada
+                </button>
+                <button type="button" class="btn btn-danger" id="btnCancelarCita" style="display:none;">
+                    <i class="bi bi-x-circle"></i> Cancelar Cita
+                </button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Modal de Filtros -->
+<div class="modal fade" id="filtrosModal" tabindex="-1" aria-labelledby="filtrosModalLabel" aria-hidden="true">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="filtrosModalLabel">
+                    <i class="bi bi-funnel"></i> Filtros
+                </h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body">
+                <div class="mb-3">
+                    <label class="form-label">Estado</label>
+                    <select class="form-select" id="filtroEstado">
+                        <option value="">Todos</option>
+                        <option value="Agendada">Agendadas</option>
+                        <option value="Completada">Completadas</option>
+                        <option value="Cancelada">Canceladas</option>
+                        <option value="NoAsistio">No Asistió</option>
+                    </select>
+                </div>
+                <div class="mb-3">
+                    <label class="form-label">Modalidad</label>
+                    <select class="form-select" id="filtroModalidad">
+                        <option value="">Todas</option>
+                        <option value="Presencial">Presencial</option>
+                        <option value="Virtual">Virtual</option>
+                    </select>
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cerrar</button>
+                <button type="button" class="btn btn-primary" id="aplicarFiltros">Aplicar Filtros</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+@section Styles {
+    <link href='https://cdn.jsdelivr.net/npm/fullcalendar@6.1.10/index.global.min.css' rel='stylesheet' />
+    <style>
+        .stat-icon {
+            width: 50px;
+            height: 50px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            margin: 0 auto;
+            font-size: 1.5rem;
+        }
+
+        #calendar {
+            max-width: 100%;
+            margin: 0 auto;
+        }
+
+        .fc-event {
+            cursor: pointer;
+            border: none;
+            padding: 2px 5px;
+        }
+
+        .fc-event-title {
+            font-weight: 500;
+        }
+
+        .list-group-item {
+            border-left: 3px solid transparent;
+        }
+
+            .list-group-item.agendada {
+                border-left-color: #0d6efd;
+            }
+
+            .list-group-item.completada {
+                border-left-color: #198754;
+            }
+
+            .list-group-item.cancelada {
+                border-left-color: #dc3545;
+            }
+
+        .cita-hora {
+            font-size: 0.9rem;
+            color: #6c757d;
+        }
+
+        .card {
+            transition: transform 0.2s;
+        }
+
+            .card:hover {
+                transform: translateY(-2px);
+            }
+    </style>
+}
+
+@section Scripts {
+    <script src='https://cdn.jsdelivr.net/npm/fullcalendar@6.1.10/index.global.min.js'></script>
+    <script src='https://cdn.jsdelivr.net/npm/fullcalendar@6.1.10/locales/es.global.min.js'></script>
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            const citasData = @Html.Raw(Json.Serialize(Model));
+            console.log('📦 Datos de citas recibidos:', citasData); // ✅ DEBUG
+
+            let citasFiltradas = citasData;
+            let calendar;
+
+            // Inicializar calendario
+            function initCalendar() {
+                const calendarEl = document.getElementById('calendar');
+
+                calendar = new FullCalendar.Calendar(calendarEl, {
+                    initialView: 'dayGridMonth',
+                    locale: 'es',
+                    headerToolbar: {
+                        left: 'prev,next today',
+                        center: 'title',
+                        right: 'dayGridMonth,timeGridWeek,timeGridDay,listWeek'
+                    },
+                    buttonText: {
+                        today: 'Hoy',
+                        month: 'Mes',
+                        week: 'Semana',
+                        day: 'Día',
+                        list: 'Lista'
+                    },
+                    events: generarEventos(citasFiltradas),
+                    eventClick: function(info) {
+                        mostrarDetalleCita(info.event.extendedProps.cita);
+                    },
+                    eventDidMount: function(info) {
+                        info.el.title = `${info.event.title}\n${info.event.extendedProps.hora}`;
+                    }
+                });
+
+                calendar.render();
+                actualizarEstadisticas();
+                actualizarCitasHoy();
+            }
+
+            // ✅ CORREGIDO: Generar eventos para FullCalendar
+            function generarEventos(citas) {
+                if (!Array.isArray(citas)) {
+                    console.error('❌ citasData no es un array:', citas);
+                    return [];
+                }
+
+                return citas.map(cita => {
+                    let color;
+                    switch(cita.estado) {
+                        case 'Agendada': color = '#0d6efd'; break;
+                        case 'Completada': color = '#198754'; break;
+                        case 'Cancelada': color = '#dc3545'; break;
+                        case 'NoAsistio': color = '#ffc107'; break;
+                        default: color = '#6c757d';
+                    }
+
+                    // ✅ IMPORTANTE: Usar propiedades correctas del CitaDto
+                    const nombrePaciente = cita.pacienteNombre || cita.medico || 'Paciente';
+                    const fechaCita = cita.fechaCita || cita.fechaCitaDate;
+
+                    // ✅ Convertir TimeSpan a string si es necesario
+                    const horaInicio = typeof cita.horaInicio === 'string'
+                        ? cita.horaInicio
+                        : formatTimeSpan(cita.horaInicioTime || cita.horaInicio);
+
+                    const horaFin = typeof cita.horaFin === 'string'
+                        ? cita.horaFin
+                        : formatTimeSpan(cita.horaFinTime || cita.horaFin);
+
+                    console.log('📅 Generando evento:', {
+                        id: cita.id,
+                        titulo: nombrePaciente,
+                        fecha: fechaCita,
+                        inicio: horaInicio,
+                        fin: horaFin,
+                        estado: cita.estado
+                    });
+
+                    // ✅ Crear fecha/hora combinada correctamente
+                    const fechaStr = fechaCita instanceof Date
+                        ? fechaCita.toISOString().split('T')[0]
+                        : new Date(fechaCita).toISOString().split('T')[0];
+
+                    return {
+                        id: cita.id,
+                        title: nombrePaciente,
+                        start: `${fechaStr}T${horaInicio}`,
+                        end: `${fechaStr}T${horaFin}`,
+                        backgroundColor: color,
+                        borderColor: color,
+                        extendedProps: {
+                            cita: cita,
+                            hora: `${horaInicio} - ${horaFin}`
+                        }
+                    };
+                });
+            }
+
+            // ✅ Función auxiliar para formatear TimeSpan
+            function formatTimeSpan(timeSpan) {
+                if (!timeSpan) return '00:00';
+
+                // Si es un objeto TimeSpan de .NET serializado
+                if (typeof timeSpan === 'object' && timeSpan.hours !== undefined) {
+                    const hours = String(timeSpan.hours).padStart(2, '0');
+                    const minutes = String(timeSpan.minutes).padStart(2, '0');
+                    return `${hours}:${minutes}`;
+                }
+
+                // Si ya es un string
+                if (typeof timeSpan === 'string') {
+                    return timeSpan;
+                }
+
+                return '00:00';
+            }
+
+            // ✅ Mostrar detalle de cita
+            function mostrarDetalleCita(cita) {
+                const modal = new bootstrap.Modal(document.getElementById('citaModal'));
+                const detalle = document.getElementById('citaDetalle');
+
+                let estadoBadge;
+                switch(cita.estado) {
+                    case 'Agendada': estadoBadge = '<span class="badge bg-primary">Agendada</span>'; break;
+                    case 'Completada': estadoBadge = '<span class="badge bg-success">Completada</span>'; break;
+                    case 'Cancelada': estadoBadge = '<span class="badge bg-danger">Cancelada</span>'; break;
+                    case 'NoAsistio': estadoBadge = '<span class="badge bg-warning">No Asistió</span>'; break;
+                }
+
+                let modalidadIcon = cita.modalidad === 'Virtual'
+                    ? '<i class="bi bi-camera-video text-primary"></i>'
+                    : '<i class="bi bi-hospital text-success"></i>';
+
+                const nombrePaciente = cita.pacienteNombre || 'Paciente';
+                const especialidad = cita.especialidadNombre || cita.especialidad || 'N/A';
+                const fechaCita = cita.fechaCita || cita.fechaCitaDate;
+                const horaInicio = cita.horaInicio || formatTimeSpan(cita.horaInicioTime);
+                const horaFin = cita.horaFin || formatTimeSpan(cita.horaFinTime);
+
+                detalle.innerHTML = `
+                    <div class="row">
+                        <div class="col-md-6 mb-3">
+                            <label class="text-muted small">Paciente</label>
+                            <div class="fw-bold"><i class="bi bi-person"></i> ${nombrePaciente}</div>
+                        </div>
+                        <div class="col-md-6 mb-3">
+                            <label class="text-muted small">Estado</label>
+                            <div>${estadoBadge}</div>
+                        </div>
+                        <div class="col-md-6 mb-3">
+                            <label class="text-muted small">Fecha</label>
+                            <div><i class="bi bi-calendar"></i> ${new Date(fechaCita).toLocaleDateString('es-ES', {
+                                weekday: 'long',
+                                year: 'numeric',
+                                month: 'long',
+                                day: 'numeric'
+                            })}</div>
+                        </div>
+                        <div class="col-md-6 mb-3">
+                            <label class="text-muted small">Horario</label>
+                            <div><i class="bi bi-clock"></i> ${horaInicio} - ${horaFin}</div>
+                        </div>
+                        <div class="col-md-6 mb-3">
+                            <label class="text-muted small">Especialidad</label>
+                            <div><i class="bi bi-heart-pulse"></i> ${especialidad}</div>
+                        </div>
+                        <div class="col-md-6 mb-3">
+                            <label class="text-muted small">Modalidad</label>
+                            <div>${modalidadIcon} ${cita.modalidad}</div>
+                        </div>
+                        ${cita.motivoConsulta ? `
+                        <div class="col-12 mb-3">
+                            <label class="text-muted small">Motivo de Consulta</label>
+                            <div class="p-2 bg-light rounded">${cita.motivoConsulta}</div>
+                        </div>
+                        ` : ''}
+                        ${cita.observaciones ? `
+                        <div class="col-12 mb-3">
+                            <label class="text-muted small">Observaciones</label>
+                            <div class="p-2 bg-light rounded">${cita.observaciones}</div>
+                        </div>
+                        ` : ''}
+                    </div>
+                `;
+
+                // Mostrar/ocultar botones según estado, estos dos botones cambian el estado de la cita
+                const btnCompletar = document.getElementById('btnCompletarCita');
+                const btnCancelar = document.getElementById('btnCancelarCita');
+                
+
+                if (cita.estado === 'Agendada') {
+                    btnCompletar.style.display = 'inline-block';
+                    btnCancelar.style.display = 'inline-block';
+
+                    btnCompletar.onclick = () => cambiarEstadoCita(cita.id, 'Completada');
+                    btnCancelar.onclick = () => cambiarEstadoCita(cita.id, 'Cancelada');
+                } else {
+                    btnCompletar.style.display = 'none';
+                    btnCancelar.style.display = 'none';
+                }
+
+                modal.show();
+            }
+
+            // Cambiar estado de cita, proveniente de los botones de cambio de estado
+            async function cambiarEstadoCita(citaId, nuevoEstado) {
+                if (!confirm(`¿Está seguro de marcar esta cita como ${nuevoEstado}?`)) {
+                    return;
+                }
+
+                try {
+                    const response = await fetch(`/Cita/CambiarEstado/${citaId}`, {
+                        method: 'POST',
+                        headers: {
+                            'Content-Type': 'application/json',
+                            'RequestVerificationToken': document.querySelector('input[name="__RequestVerificationToken"]')?.value || ''
+                        },
+                        body: JSON.stringify({
+                            estado: nuevoEstado,
+                            motivo: null
+                        })
+                    });
+
+                    if (response.ok) {
+                        const result = await response.json();
+                        alert(result.mensaje || 'Estado actualizado correctamente');
+                        location.reload();
+                    } else {
+                        const error = await response.json();
+                        alert(error.error || 'Error al cambiar el estado de la cita');
+                    }
+                } catch (error) {
+                    console.error('Error:', error);
+                    alert('Error al procesar la solicitud');
+                }
+            }
+
+            // Actualizar estadísticas
+            function actualizarEstadisticas() {
+                const agendadas = citasFiltradas.filter(c => c.estado === 'Agendada').length;
+                const completadas = citasFiltradas.filter(c => c.estado === 'Completada').length;
+                const canceladas = citasFiltradas.filter(c => c.estado === 'Cancelada').length;
+
+                const hoy = new Date().toISOString().split('T')[0];
+                const citasHoy = citasFiltradas.filter(c => {
+                    const fechaCita = c.fechaCita || c.fechaCitaDate;
+                    const fechaStr = fechaCita instanceof Date
+                        ? fechaCita.toISOString().split('T')[0]
+                        : new Date(fechaCita).toISOString().split('T')[0];
+                    return fechaStr === hoy;
+                }).length;
+
+                document.getElementById('totalAgendadas').textContent = agendadas;
+                document.getElementById('totalCompletadas').textContent = completadas;
+                document.getElementById('totalCanceladas').textContent = canceladas;
+                document.getElementById('citasHoy').textContent = citasHoy;
+            }
+
+            // Actualizar lista de citas del día
+            function actualizarCitasHoy() {
+                const hoy = new Date().toISOString().split('T')[0];
+                const citasHoy = citasFiltradas
+                    .filter(c => {
+                        const fechaCita = c.fechaCita || c.fechaCitaDate;
+                        const fechaStr = fechaCita instanceof Date
+                            ? fechaCita.toISOString().split('T')[0]
+                            : new Date(fechaCita).toISOString().split('T')[0];
+                        return fechaStr === hoy;
+                    })
+                    .sort((a, b) => {
+                        const horaA = a.horaInicio || formatTimeSpan(a.horaInicioTime);
+                        const horaB = b.horaInicio || formatTimeSpan(b.horaInicioTime);
+                        return horaA.localeCompare(horaB);
+                    });
+
+                const lista = document.getElementById('citasHoyLista');
+
+                if (citasHoy.length === 0) {
+                    lista.innerHTML = `
+                        <div class="text-center py-4 text-muted">
+                            <i class="bi bi-calendar-x fs-1"></i>
+                            <p class="mb-0">No hay citas programadas para hoy</p>
+                        </div>
+                    `;
+                    return;
+                }
+
+                lista.innerHTML = citasHoy.map(cita => {
+                    const nombrePaciente = cita.pacienteNombre || 'Paciente';
+                    const horaInicio = cita.horaInicio || formatTimeSpan(cita.horaInicioTime);
+
+                    return `
+                        <div class="list-group-item ${cita.estado.toLowerCase()}" style="cursor: pointer;"
+                             onclick='mostrarDetalleCita(${JSON.stringify(cita)})'>
+                            <div class="d-flex justify-content-between align-items-center">
+                                <div>
+                                    <strong>${nombrePaciente}</strong>
+                                    <div class="cita-hora">
+                                        <i class="bi bi-clock"></i> ${horaInicio}
+                                    </div>
+                                </div>
+                                <span class="badge bg-${cita.estado === 'Agendada' ? 'primary' : cita.estado === 'Completada' ? 'success' : 'danger'}">
+                                    ${cita.estado}
+                                </span>
+                            </div>
+                        </div>
+                    `;
+                }).join('');
+            }
+
+            // Aplicar filtros
+            document.getElementById('aplicarFiltros')?.addEventListener('click', function() {
+                const estado = document.getElementById('filtroEstado').value;
+                const modalidad = document.getElementById('filtroModalidad').value;
+
+                citasFiltradas = citasData.filter(cita => {
+                    let cumple = true;
+                    if (estado && cita.estado !== estado) cumple = false;
+                    if (modalidad && cita.modalidad !== modalidad) cumple = false;
+                    return cumple;
+                });
+
+                calendar.removeAllEvents();
+                calendar.addEventSource(generarEventos(citasFiltradas));
+                actualizarEstadisticas();
+                actualizarCitasHoy();
+
+                bootstrap.Modal.getInstance(document.getElementById('filtrosModal'))?.hide();
+            });
+
+            // Inicializar
+            initCalendar();
+        });
+    </script>
+}

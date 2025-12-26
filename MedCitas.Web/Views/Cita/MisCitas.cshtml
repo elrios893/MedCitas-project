@@ -1,0 +1,165 @@
+@model List<MedCitas.Core.DTOs.CitaDto>
+
+@{
+    ViewData["Title"] = "Mis Citas";
+}
+
+<div class="container mt-5">
+    <div class="row">
+        <div class="col-12">
+            <div class="d-flex justify-content-between align-items-center mb-4">
+                <h2>
+                    <i class="fas fa-calendar-alt"></i> Mis Citas Médicas
+                </h2>
+                <a asp-action="Agendar" class="btn btn-primary">
+                    <i class="fas fa-plus"></i> Agendar Nueva Cita
+                </a>
+            </div>
+
+            @if (TempData["MensajeExito"] != null)
+            {
+                <div class="alert alert-success alert-dismissible fade show" role="alert">
+                    <i class="fas fa-check-circle"></i> @TempData["MensajeExito"]
+                    <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+                </div>
+            }
+
+            @if (TempData["Error"] != null)
+            {
+                <div class="alert alert-danger alert-dismissible fade show" role="alert">
+                    <i class="fas fa-exclamation-triangle"></i> @TempData["Error"]
+                    <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+                </div>
+            }
+
+            <!-- Filtros -->
+            <div class="card mb-4">
+                <div class="card-body">
+                    <form method="get" asp-action="MisCitas" class="row g-3">
+                        <div class="col-md-4">
+                            <label for="estado" class="form-label">Estado</label>
+                            <select name="estado" id="estado" class="form-select">
+                                <option value="">Todos los estados</option>
+                                <option value="Agendada">Agendada</option>
+                                <option value="Cancelada">Cancelada</option>
+                                <option value="Completada">Completada</option>
+                                <option value="NoAsistio">No Asistió</option>
+                            </select>
+                        </div>
+
+                        <div class="col-md-3">
+                            <label for="desde" class="form-label">Desde</label>
+                            <input type="date" name="desde" id="desde" class="form-control" />
+                        </div>
+
+                        <div class="col-md-3">
+                            <label for="hasta" class="form-label">Hasta</label>
+                            <input type="date" name="hasta" id="hasta" class="form-control" />
+                        </div>
+
+                        <div class="col-md-2 d-flex align-items-end">
+                            <button type="submit" class="btn btn-primary w-100">
+                                <i class="fas fa-filter"></i> Filtrar
+                            </button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+
+            @if (Model != null && Model.Any())
+            {
+                <div class="row">
+                    @foreach (var cita in Model)
+                    {
+                        var estadoClass = cita.Estado switch
+                        {
+                            "Agendada" => "primary",
+                            "Cancelada" => "danger",
+                            "Completada" => "success",
+                            "NoAsistio" => "warning",
+                            _ => "secondary"
+                        };
+
+                        var modalidadIcon = cita.Modalidad == "Virtual" ? "fas fa-video" : "fas fa-hospital";
+
+                        <div class="col-md-6 col-lg-4 mb-4">
+                            <div class="card shadow-sm h-100">
+                                <div class="card-header bg-@estadoClass text-white">
+                                    <div class="d-flex justify-content-between align-items-center">
+                                        <span class="badge bg-light text-dark">
+                                            @cita.Estado
+                                        </span>
+                                        <i class="@modalidadIcon"></i>
+                                    </div>
+                                </div>
+                                <div class="card-body">
+                                    <h5 class="card-title text-primary">@cita.Especialidad</h5>
+                                    <p class="card-text">
+                                        <i class="fas fa-user-md"></i> <strong>@cita.Medico</strong>
+                                    </p>
+                                    <hr />
+                                    <p class="mb-2">
+                                        <i class="fas fa-calendar"></i> @cita.FechaCita.ToString("dddd, dd MMMM yyyy")
+                                    </p>
+                                    <p class="mb-2">
+                                        <i class="fas fa-clock"></i> @cita.HoraInicio.ToString(@"hh\:mm") - @cita.HoraFin.ToString(@"hh\:mm")
+                                    </p>
+                                    <p class="mb-2">
+                                        <i class="fas fa-map-marker-alt"></i> @cita.Modalidad
+                                    </p>
+
+                                    @if (cita.Estado == "Agendada")
+                                    {
+                                        @if (cita.PuedeCancelarse)
+                                        {
+                                            <div class="alert alert-info mb-0 mt-2">
+                                                <i class="fas fa-info-circle"></i>
+                                                Faltan @Math.Round(cita.HorasHastaCita, 1) horas
+                                            </div>
+                                        }
+                                        else
+                                        {
+                                            <div class="alert alert-warning mb-0 mt-2">
+                                                <i class="fas fa-exclamation-triangle"></i>
+                                                Cita próxima
+                                            </div>
+                                        }
+                                    }
+                                </div>
+                                <div class="card-footer bg-transparent">
+                                    <a asp-action="Detalle" asp-route-id="@cita.Id" class="btn btn-sm btn-outline-primary w-100">
+                                        <i class="fas fa-eye"></i> Ver Detalle
+                                    </a>
+                                </div>
+                            </div>
+                        </div>
+                    }
+                </div>
+            }
+            else
+            {
+                <div class="card">
+                    <div class="card-body text-center py-5">
+                        <i class="fas fa-calendar-times fa-4x text-muted mb-3"></i>
+                        <h4 class="text-muted">No tienes citas registradas</h4>
+                        <p class="text-muted">Agenda tu primera cita médica ahora</p>
+                        <a asp-action="Agendar" class="btn btn-primary">
+                            <i class="fas fa-plus"></i> Agendar Cita
+                        </a>
+                    </div>
+                </div>
+            }
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+    <script>
+          // Pre-seleccionar filtro de estado si viene en query string
+             const urlParams = new URLSearchParams(window.location.search);
+            const estadoParam = urlParams.get('estado');
+          if (estadoParam) {
+        document.getElementById('estado').value = estadoParam;
+            }
+    </script>
+}

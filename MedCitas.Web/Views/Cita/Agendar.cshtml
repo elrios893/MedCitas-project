@@ -1,0 +1,500 @@
+﻿@model MedCitas.Core.DTOs.AgendarCitaDto
+
+@{
+    ViewData["Title"] = "Agendar Cita";
+}
+
+<div class="container mt-5">
+    <div class="row justify-content-center">
+        <div class="col-md-8">
+            <div class="card shadow-lg">
+                <div class="card-header bg-primary text-white">
+                    <h3 class="mb-0">
+                        <i class="bi bi-calendar-plus"></i> Agendar Nueva Cita
+                    </h3>
+                </div>
+
+                <div class="card-body">
+                    @if (ViewBag.Error != null)
+                    {
+                        <div class="alert alert-danger alert-dismissible fade show" role="alert">
+                            <i class="bi bi-exclamation-triangle"></i> @ViewBag.Error
+                            <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Cerrar"></button>
+                        </div>
+                    }
+
+                    <form asp-action="Agendar" method="post" id="agendarForm">
+                        @Html.AntiForgeryToken()
+
+                        <!-- Paso 1: Selección de Especialidad -->
+                        <div class="mb-4">
+                            <h5 class="text-primary">
+                                <i class="bi bi-stethoscope"></i> Paso 1: Selecciona la Especialidad
+                            </h5>
+                            <hr />
+                            <div class="mb-3">
+                                <label for="especialidad" class="form-label">Especialidad Médica *</label>
+                                <select id="especialidad" class="form-select" required>
+                                    <option value="">Seleccione una especialidad...</option>
+                                </select>
+                                <div id="loadingEspecialidades" class="text-muted small mt-1" style="display:none;">
+                                    <span class="spinner-border spinner-border-sm"></span> Cargando especialidades...
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Paso 2: Selección de Médico -->
+                        <div class="mb-4" id="paso2" style="display: none;">
+                            <h5 class="text-primary">
+                                <i class="bi bi-person-fill-gear"></i> Paso 2: Selecciona el Médico
+                            </h5>
+                            <hr />
+                            <div class="mb-3">
+                                <label for="DoctorId" class="form-label">Médico *</label>
+                                <select asp-for="DoctorId" id="DoctorId" class="form-select" required>
+                                    <option value="">Seleccione un médico...</option>
+                                </select>
+                                <div id="loadingDoctores" class="text-muted small mt-1" style="display:none;">
+                                    <span class="spinner-border spinner-border-sm"></span> Cargando médicos...
+                                </div>
+                                <span asp-validation-for="DoctorId" class="text-danger"></span>
+                            </div>
+                        </div>
+
+                        <!-- Resto del código permanece igual... -->
+                        <!-- Paso 3, 4 y botones -->
+                        <!-- Paso 3: Fecha y Hora -->
+                        <div class="mb-4" id="paso3" style="display: none;">
+                            <h5 class="text-primary">
+                                <i class="bi bi-calendar-event"></i> Paso 3: Selecciona Fecha y Hora
+                            </h5>
+                            <hr />
+
+                            <div class="row">
+                                <div class="col-md-6 mb-3">
+                                    <label for="FechaCita" class="form-label">Fecha de la Cita *</label>
+                                    <input asp-for="FechaCita" type="date" id="FechaCita" class="form-control" required />
+                                    <span asp-validation-for="FechaCita" class="text-danger"></span>
+                                </div>
+
+                                <div class="col-md-6 mb-3">
+                                    <label for="btnDisponibilidad" class="form-label">Horarios Disponibles</label>
+                                    <button type="button" id="btnDisponibilidad" class="btn btn-outline-primary w-100">
+                                        <i class="bi bi-search"></i> Ver Disponibilidad
+                                    </button>
+                                </div>
+                            </div>
+
+                            <div id="slotsContainer" style="display: none;">
+                                <label for="slots" class="form-label">Selecciona un Horario *</label>
+                                <div id="loadingSlots" class="text-center py-3" style="display:none;">
+                                    <div class="spinner-border text-primary" role="status">
+                                        <span class="visually-hidden">Cargando...</span>
+                                    </div>
+                                    <p class="text-muted mt-2">Cargando disponibilidad...</p>
+                                </div>
+                                <div id="slots" class="row g-2 mb-3">
+                                    <!-- Los slots se cargarán dinámicamente -->
+                                </div>
+                            </div>
+
+                            <input type="hidden" asp-for="HoraInicio" id="HoraInicio" />
+                            <input type="hidden" asp-for="HoraFin" id="HoraFin" />
+                        </div>
+
+                        <!-- Paso 4: Detalles de la Cita -->
+                        <div class="mb-4" id="paso4" style="display: none;">
+                            <h5 class="text-primary">
+                                <i class="bi bi-info-circle"></i> Paso 4: Detalles de la Cita
+                            </h5>
+                            <hr />
+
+                            <div class="mb-3">
+                                <label for="Modalidad" class="form-label">Modalidad de Atención *</label>
+                                <select asp-for="Modalidad" id="Modalidad" class="form-select" required>
+                                    <option value="Presencial">Presencial</option>
+                                    <option value="Virtual">Virtual (Telemedicina)</option>
+                                </select>
+                                <span asp-validation-for="Modalidad" class="text-danger"></span>
+                            </div>
+
+                            <div class="mb-3">
+                                <label for="MotivoConsulta" class="form-label">Motivo de la Consulta (Opcional)</label>
+                                <textarea asp-for="MotivoConsulta" id="MotivoConsulta" class="form-control" rows="4"
+                                          maxlength="500" placeholder="Describe brevemente el motivo de tu consulta..."></textarea>
+                                <span asp-validation-for="MotivoConsulta" class="text-danger"></span>
+                                <small class="form-text text-muted">Máximo 500 caracteres</small>
+                            </div>
+
+                            <!-- Resumen -->
+                            <div class="card bg-light">
+                                <div class="card-body">
+                                    <h6 class="card-title">Resumen de la Cita:</h6>
+                                    <ul class="list-unstyled mb-0">
+                                        <li><strong>Especialidad:</strong> <span id="resumenEspecialidad">-</span></li>
+                                        <li><strong>Médico:</strong> <span id="resumenMedico">-</span></li>
+                                        <li><strong>Fecha:</strong> <span id="resumenFecha">-</span></li>
+                                        <li><strong>Hora:</strong> <span id="resumenHora">-</span></li>
+                                        <li><strong>Modalidad:</strong> <span id="resumenModalidad">Presencial</span></li>
+                                    </ul>
+                                </div>
+                            </div>
+                        </div>
+
+                        <hr />
+
+                        <div class="d-flex justify-content-between">
+                            <a asp-action="MisCitas" class="btn btn-secondary">
+                                <i class="bi bi-arrow-left"></i> Cancelar
+                            </a>
+                            <button type="submit" class="btn btn-success btn-lg" id="btnAgendar" disabled>
+                                <i class="bi bi-check"></i> Confirmar Cita
+                            </button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+    @{
+        await Html.RenderPartialAsync("_ValidationScriptsPartial");
+    }
+    <script>
+        let especialidades = [];
+        let medicos = [];
+        let horarioSeleccionado = null;
+        let especialidadSeleccionada = null;
+
+        // ============================================
+        // INICIALIZACIÓN
+        // ============================================
+        document.addEventListener('DOMContentLoaded', function() {
+            console.log('🚀 Inicializando formulario de agendar cita...');
+
+            cargarEspecialidades();
+
+            // ✅ CORREGIDO: Configurar fecha mínima (mañana)
+            const manana = new Date();
+            manana.setDate(manana.getDate() + 1); // ✅ Correcto
+            document.getElementById('FechaCita').min = manana.toISOString().split('T')[0];
+
+            console.log(`📅 Fecha mínima configurada: ${manana.toISOString().split('T')[0]}`);
+
+            // Event listeners
+            document.getElementById('especialidad').addEventListener('change', onEspecialidadChange);
+            document.getElementById('DoctorId').addEventListener('change', onMedicoChange);
+            document.getElementById('btnDisponibilidad').addEventListener('click', cargarDisponibilidad);
+            document.getElementById('Modalidad').addEventListener('change', actualizarResumen);
+        });
+
+        // ============================================
+        // CARGAR ESPECIALIDADES DESDE API
+        // ============================================
+        async function cargarEspecialidades() {
+            const select = document.getElementById('especialidad');
+            const loading = document.getElementById('loadingEspecialidades');
+
+            try {
+                console.log('📡 Llamando a /Cita/ObtenerEspecialidades...');
+                loading.style.display = 'block';
+
+                const response = await fetch('/Cita/ObtenerEspecialidades');
+
+                console.log(`📊 Respuesta recibida: Status ${response.status}`);
+
+                if (!response.ok) {
+                    throw new Error(`Error HTTP: ${response.status}`);
+                }
+
+                const data = await response.json();
+                console.log('📦 Datos recibidos:', data);
+
+                // ✅ Verificar si hay error en la respuesta
+                if (data.error) {
+                    throw new Error(data.error);
+                }
+
+                especialidades = data;
+
+                select.innerHTML = '<option value="">Seleccione una especialidad...</option>';
+
+                if (especialidades.length === 0) {
+                    select.innerHTML = '<option value="">No hay especialidades disponibles</option>';
+                    console.warn('⚠️ No se encontraron especialidades');
+                    return;
+                }
+
+                especialidades.forEach(esp => {
+                    const option = document.createElement('option');
+                    option.value = esp.id;
+                    option.textContent = esp.nombre;
+                    option.setAttribute('data-nombre', esp.nombre);
+                    select.appendChild(option);
+                });
+
+                console.log(`✅ Cargadas ${especialidades.length} especialidades exitosamente`);
+            } catch (error) {
+                console.error('❌ Error al cargar especialidades:', error);
+                select.innerHTML = '<option value="">Error al cargar especialidades</option>';
+                alert('Error al cargar especialidades. Por favor, recarga la página.');
+            } finally {
+                loading.style.display = 'none';
+            }
+        }
+
+        // ============================================
+        // EVENTO: CAMBIO DE ESPECIALIDAD
+        // ============================================
+        function onEspecialidadChange(e) {
+            const especialidadId = e.target.value;
+            console.log(`🔄 Especialidad cambiada: ${especialidadId}`);
+
+            if (!especialidadId) {
+                document.getElementById('paso2').style.display = 'none';
+                document.getElementById('paso3').style.display = 'none';
+                document.getElementById('paso4').style.display = 'none';
+                return;
+            }
+
+            // Guardar especialidad seleccionada
+            especialidadSeleccionada = especialidades.find(esp => esp.id === especialidadId);
+            console.log('📋 Especialidad seleccionada:', especialidadSeleccionada);
+
+            // Cargar médicos de la especialidad
+            cargarMedicos(especialidadId);
+
+            // Mostrar paso 2
+            document.getElementById('paso2').style.display = 'block';
+
+            // Actualizar resumen
+            const especialidadNombre = e.target.options[e.target.selectedIndex].text;
+            document.getElementById('resumenEspecialidad').textContent = especialidadNombre;
+
+            console.log(`📋 Especialidad seleccionada: ${especialidadNombre} (${especialidadId})`);
+        }
+
+        // ============================================
+        // CARGAR MÉDICOS POR ESPECIALIDAD DESDE API
+        // ============================================
+        async function cargarMedicos(especialidadId) {
+            const select = document.getElementById('DoctorId');
+            const loading = document.getElementById('loadingDoctores');
+
+            try {
+                console.log(`📡 Llamando a /Cita/ObtenerDoctoresPorEspecialidad?especialidadId=${especialidadId}...`);
+
+                loading.style.display = 'block';
+                select.innerHTML = '<option value="">Cargando médicos...</option>';
+                select.disabled = true;
+
+                const url = `/Cita/ObtenerDoctoresPorEspecialidad?especialidadId=${especialidadId}`;
+                console.log('🔗 URL completa:', url);
+
+                const response = await fetch(url);
+
+                console.log(`📊 Respuesta recibida: Status ${response.status}`);
+
+                if (!response.ok) {
+                    throw new Error(`Error HTTP: ${response.status}`);
+                }
+
+                const data = await response.json();
+                console.log('📦 Datos de médicos recibidos:', data);
+
+                // ✅ Verificar si hay error en la respuesta
+                if (data.error) {
+                    throw new Error(data.error);
+                }
+
+                medicos = data;
+
+                select.innerHTML = '<option value="">Seleccione un médico...</option>';
+
+                if (medicos.length === 0) {
+                    select.innerHTML = '<option value="">No hay médicos disponibles para esta especialidad</option>';
+                    console.warn('⚠️ No se encontraron médicos para la especialidad');
+                    select.disabled = false;
+                    return;
+                }
+
+                medicos.forEach(med => {
+                    const option = document.createElement('option');
+                    option.value = med.id;
+                    option.textContent = med.nombre;
+                    option.setAttribute('data-nombre', med.nombre);
+                    select.appendChild(option);
+                });
+
+                console.log(`✅ Cargados ${medicos.length} médicos exitosamente`);
+            } catch (error) {
+                console.error('❌ Error al cargar médicos:', error);
+                select.innerHTML = '<option value="">Error al cargar médicos</option>';
+                alert(`Error al cargar médicos: ${error.message}`);
+            } finally {
+                loading.style.display = 'none';
+                select.disabled = false;
+            }
+        }
+
+        // ============================================
+        // EVENTO: CAMBIO DE MÉDICO
+        // ============================================
+        function onMedicoChange(e) {
+            const medicoId = e.target.value;
+            console.log(`🔄 Médico cambiado: ${medicoId}`);
+
+            if (!medicoId) {
+                document.getElementById('paso3').style.display = 'none';
+                document.getElementById('paso4').style.display = 'none';
+                return;
+            }
+
+            document.getElementById('paso3').style.display = 'block';
+
+            // Actualizar resumen
+            const medicoNombre = e.target.options[e.target.selectedIndex].text;
+            document.getElementById('resumenMedico').textContent = medicoNombre;
+
+            console.log(`👨‍⚕️ Médico seleccionado: ${medicoNombre} (${medicoId})`);
+        }
+
+        // ============================================
+        // CARGAR DISPONIBILIDAD DESDE API
+        // ============================================
+        async function cargarDisponibilidad() {
+            const medicoId = document.getElementById('DoctorId').value;
+            const fecha = document.getElementById('FechaCita').value;
+
+            console.log(`📡 Solicitando disponibilidad para médico ${medicoId} en fecha ${fecha}`);
+
+            if (!medicoId || !fecha) {
+                alert('Selecciona médico y fecha primero');
+                return;
+            }
+
+            const slotsContainer = document.getElementById('slotsContainer');
+            const loadingSlots = document.getElementById('loadingSlots');
+            const slotsDiv = document.getElementById('slots');
+
+            try {
+                slotsContainer.style.display = 'block';
+                loadingSlots.style.display = 'block';
+                slotsDiv.innerHTML = '';
+
+                const url = `/Cita/ObtenerDisponibilidad?doctorId=${medicoId}&fecha=${fecha}`;
+                console.log('🔗 URL disponibilidad:', url);
+
+                const response = await fetch(url);
+
+                console.log(`📊 Respuesta recibida: Status ${response.status}`);
+
+                if (!response.ok) {
+                    throw new Error(`Error HTTP: ${response.status}`);
+                }
+
+                const data = await response.json();
+                console.log('📦 Slots recibidos:', data);
+
+                if (data.error) {
+                    throw new Error(data.error);
+                }
+
+                renderSlots(data);
+                document.getElementById('paso4').style.display = 'block';
+
+                console.log(`✅ Cargados ${data.length} slots de disponibilidad`);
+            } catch (error) {
+                console.error('❌ Error al cargar disponibilidad:', error);
+                alert(error.message || 'Error al cargar la disponibilidad');
+            } finally {
+                loadingSlots.style.display = 'none';
+            }
+        }
+
+        // ============================================
+        // RENDERIZAR SLOTS DE DISPONIBILIDAD
+        // ============================================
+        function renderSlots(slots) {
+            const container = document.getElementById('slots');
+            container.innerHTML = '';
+
+            if (!Array.isArray(slots) || slots.length === 0) {
+                container.innerHTML = '<div class="col-12 text-center text-muted">No hay horarios disponibles para esta fecha</div>';
+                return;
+            }
+
+            slots.forEach(slot => {
+                const div = document.createElement('div');
+                div.className = 'col-md-3 col-sm-4 col-6 mb-2';
+
+                const button = document.createElement('button');
+                button.type = 'button';
+                button.className = slot.disponible
+                    ? 'btn btn-outline-success w-100'
+                    : 'btn btn-outline-secondary w-100';
+                button.textContent = slot.inicio;
+                button.disabled = !slot.disponible;
+
+                if (slot.disponible) {
+                    button.onclick = () => seleccionarHorario(slot, button);
+                }
+
+                div.appendChild(button);
+                container.appendChild(div);
+            });
+
+            console.log(`✅ Renderizados ${slots.length} slots`);
+        }
+
+        // ============================================
+        // SELECCIONAR HORARIO
+        // ============================================
+        function seleccionarHorario(slot, buttonElement) {
+            console.log('⏰ Seleccionando horario:', slot);
+
+            // Remover selección anterior
+            document.querySelectorAll('#slots button').forEach(btn => {
+                btn.classList.remove('btn-success');
+                btn.classList.add('btn-outline-success');
+            });
+
+            // Marcar selección actual
+            buttonElement.classList.remove('btn-outline-success');
+            buttonElement.classList.add('btn-success');
+
+            // Guardar horario
+            horarioSeleccionado = slot;
+            document.getElementById('HoraInicio').value = slot.inicio;
+            document.getElementById('HoraFin').value = slot.fin;
+
+            // Actualizar resumen
+            const fecha = document.getElementById('FechaCita').value;
+            const fechaObj = new Date(fecha + 'T12:00:00'); // ✅ Añadir hora para evitar problemas de zona horaria
+            document.getElementById('resumenFecha').textContent = fechaObj.toLocaleDateString('es-ES', {
+                weekday: 'long',
+                year: 'numeric',
+                month: 'long',
+                day: 'numeric'
+            });
+            document.getElementById('resumenHora').textContent = `${slot.inicio} - ${slot.fin}`;
+
+            // Habilitar botón de agendar
+            document.getElementById('btnAgendar').disabled = false;
+
+            console.log(`✅ Horario seleccionado: ${slot.inicio} - ${slot.fin}`);
+        }
+
+        // ============================================
+        // ACTUALIZAR RESUMEN
+        // ============================================
+        function actualizarResumen() {
+            const modalidad = document.getElementById('Modalidad').value;
+            document.getElementById('resumenModalidad').textContent = modalidad;
+            console.log(`📝 Modalidad actualizada: ${modalidad}`);
+        }
+    </script>
+}
+}

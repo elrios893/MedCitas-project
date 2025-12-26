@@ -1,0 +1,276 @@
+﻿@{
+    ViewData["Title"] = "Registrar Médico";
+    var especialidades = ViewBag.Especialidades as List<MedCitas.Core.Entities.Specialty>;
+}
+
+<div class="container mt-5">
+    <div class="row justify-content-center">
+        <div class="col-md-8">
+            <!-- Breadcrumb -->
+            <nav aria-label="breadcrumb">
+                <ol class="breadcrumb">
+                    <li class="breadcrumb-item">
+                        <a asp-action="Dashboard">Dashboard</a>
+                    </li>
+                    <li class="breadcrumb-item">
+                        <a asp-action="ListarUsuarios">Usuarios</a>
+                    </li>
+                    <li class="breadcrumb-item active" aria-current="page">Registrar Médico</li>
+                </ol>
+            </nav>
+
+            <div class="card shadow-lg border-0">
+                <div class="card-header bg-success text-white">
+                    <h3 class="mb-0">
+                        <i class="bi bi-hospital"></i> Registrar Nuevo Médico
+                    </h3>
+                </div>
+                <div class="card-body">
+                    @if (ViewBag.Error != null)
+                    {
+                        <div class="alert alert-danger alert-dismissible fade show" role="alert">
+                            <i class="bi bi-exclamation-triangle-fill"></i>
+                            <strong>Error:</strong> @ViewBag.Error
+                            <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+                        </div>
+                    }
+
+                    <div class="alert alert-info">
+                        <i class="bi bi-info-circle"></i>
+                        <strong>Información:</strong> El médico podrá gestionar citas y atender pacientes en el sistema.
+                    </div>
+
+                    <form asp-action="RegistrarMed" method="post">
+                        <!-- Datos Profesionales -->
+                        <div class="row mb-4">
+                            <div class="col-12">
+                                <h5 class="border-bottom pb-2 mb-3">
+                                    <i class="bi bi-briefcase-fill"></i> Datos Profesionales
+                                </h5>
+                            </div>
+
+                            <div class="col-md-12 mb-3">
+                                <label for="nombreCompleto" class="form-label">
+                                    Nombre Completo <span class="text-danger">*</span>
+                                </label>
+                                <div class="input-group">
+                                    <span class="input-group-text">
+                                        <i class="bi bi-person-badge"></i>
+                                    </span>
+                                    <input type="text"
+                                           name="nombreCompleto"
+                                           id="nombreCompleto"
+                                           class="form-control"
+                                           placeholder="Ej: Dr. Carlos Pérez García"
+                                           required />
+                                </div>
+                            </div>
+
+                            <div class="col-md-6 mb-3">
+                                <label for="specialtyId" class="form-label">
+                                    Especialidad <span class="text-danger">*</span>
+                                </label>
+                                <div class="input-group">
+                                    <span class="input-group-text">
+                                        <i class="bi bi-heart-pulse"></i>
+                                    </span>
+                                    <select name="specialtyId"
+                                            id="specialtyId"
+                                            class="form-select"
+                                            required>
+                                        <option value="">Seleccione una especialidad...</option>
+                                        @if (especialidades != null)
+                                        {
+                                            @foreach (var especialidad in especialidades)
+                                            {
+                                                <option value="@especialidad.Id">
+                                                    @especialidad.Nombre
+                                                </option>
+                                            }
+                                        }
+                                    </select>
+                                </div>
+                            </div>
+
+                            <div class="col-md-6 mb-3">
+                                <label for="numeroLicencia" class="form-label">
+                                    Número de Licencia Médica <span class="text-danger">*</span>
+                                </label>
+                                <div class="input-group">
+                                    <span class="input-group-text">
+                                        <i class="bi bi-card-text"></i>
+                                    </span>
+                                    <input type="text"
+                                           name="numeroLicencia"
+                                           id="numeroLicencia"
+                                           class="form-control"
+                                           placeholder="Ej: MED-12345"
+                                           maxlength="50"
+                                           required />
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Datos de Contacto -->
+                        <div class="row mb-4">
+                            <div class="col-12">
+                                <h5 class="border-bottom pb-2 mb-3">
+                                    <i class="bi bi-telephone"></i> Datos de Contacto
+                                </h5>
+                            </div>
+
+                            <div class="col-md-6 mb-3">
+                                <label for="correoElectronico" class="form-label">
+                                    Correo Electrónico <span class="text-danger">*</span>
+                                </label>
+                                <div class="input-group">
+                                    <span class="input-group-text">
+                                        <i class="bi bi-envelope-fill"></i>
+                                    </span>
+                                    <input type="email"
+                                           name="correoElectronico"
+                                           id="correoElectronico"
+                                           class="form-control"
+                                           placeholder="doctor@medcitas.com"
+                                           required />
+                                </div>
+                            </div>
+
+                            <div class="col-md-6 mb-3">
+                                <label for="telefono" class="form-label">
+                                    Teléfono
+                                </label>
+                                <div class="input-group">
+                                    <span class="input-group-text">
+                                        <i class="bi bi-telephone-fill"></i>
+                                    </span>
+                                    <input type="text"
+                                           name="telefono"
+                                           id="telefono"
+                                           class="form-control"
+                                           placeholder="Ej: 3012345678"
+                                           pattern="[0-9]{7,15}"
+                                           maxlength="15" />
+                                </div>
+                                <small class="text-muted">Entre 7 y 15 dígitos (opcional)</small>
+                            </div>
+                        </div>
+
+                        <!-- Seguridad -->
+                        <div class="row mb-4">
+                            <div class="col-12">
+                                <h5 class="border-bottom pb-2 mb-3">
+                                    <i class="bi bi-shield-lock"></i> Seguridad
+                                </h5>
+                            </div>
+
+                            <div class="col-md-6 mb-3">
+                                <label for="password" class="form-label">
+                                    Contraseña <span class="text-danger">*</span>
+                                </label>
+                                <div class="input-group">
+                                    <span class="input-group-text">
+                                        <i class="bi bi-lock-fill"></i>
+                                    </span>
+                                    <input type="password"
+                                           name="password"
+                                           id="password"
+                                           class="form-control"
+                                           placeholder="Mínimo 8 caracteres"
+                                           required />
+                                    <button class="btn btn-outline-secondary"
+                                            type="button"
+                                            id="togglePassword">
+                                        <i class="bi bi-eye"></i>
+                                    </button>
+                                </div>
+                                <small class="form-text text-muted">
+                                    Debe contener: mayúsculas, minúsculas, números y símbolos
+                                </small>
+                            </div>
+
+                            <div class="col-md-6 mb-3">
+                                <label for="confirmarPassword" class="form-label">
+                                    Confirmar Contraseña <span class="text-danger">*</span>
+                                </label>
+                                <div class="input-group">
+                                    <span class="input-group-text">
+                                        <i class="bi bi-lock-fill"></i>
+                                    </span>
+                                    <input type="password"
+                                           name="confirmarPassword"
+                                           id="confirmarPassword"
+                                           class="form-control"
+                                           placeholder="Repita la contraseña"
+                                           required />
+                                    <button class="btn btn-outline-secondary"
+                                            type="button"
+                                            id="toggleConfirmPassword">
+                                        <i class="bi bi-eye"></i>
+                                    </button>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Botones -->
+                        <div class="d-grid gap-2">
+                            <button type="submit" class="btn btn-success btn-lg">
+                                <i class="bi bi-hospital"></i> Registrar Médico
+                            </button>
+                            <a asp-action="Dashboard" class="btn btn-outline-secondary">
+                                <i class="bi bi-arrow-left"></i> Volver al dashboard
+                            </a>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+    <script src="~/js/password-toggle.js"></script>
+}
+
+@section Styles {
+    <style>
+        .card {
+            border-radius: 10px;
+        }
+
+        .card-header {
+            border-radius: 10px 10px 0 0 !important;
+            padding: 1.5rem;
+        }
+
+        .input-group-text {
+            background-color: #f8f9fa;
+            border-right: none;
+        }
+
+        .form-control, .form-select {
+            border-left: none;
+        }
+
+            .form-control:focus, .form-select:focus {
+                box-shadow: none;
+                border-color: #ced4da;
+            }
+
+        .input-group:focus-within .input-group-text {
+            border-color: #86b7fe;
+            background-color: #e7f1ff;
+        }
+
+        .input-group:focus-within .form-control,
+        .input-group:focus-within .form-select {
+            border-color: #86b7fe;
+        }
+
+        .breadcrumb {
+            background-color: transparent;
+            padding: 0;
+            margin-bottom: 1rem;
+        }
+    </style>
+}

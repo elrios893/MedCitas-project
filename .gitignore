@@ -1,0 +1,95 @@
+# Visual Studio
+.vs/
+*.user
+*.suo
+*.userosscache
+*.sln.docstates
+
+# Build results
+bin/
+obj/
+Debug/
+Release/
+[Bb]uild/
+artifacts/
+[Dd]ebug/
+[Dd]ebugPublic/
+[Rr]elease/
+[Rr]eleases/
+x64/
+x86/
+[Aa]rm/
+[Aa]rm64/
+bld/
+[Bb]in/
+[Oo]bj/
+[Ll]og/
+[Ll]ogs/
+
+# Copilot / VS cache
+.vscode/
+.vsidx
+*.vsidx
+.vs/MedCitas/
+
+# Packages
+*.nupkg
+*.snupkg
+packages/
+*.nuspec
+**/packages/*
+
+# Logs
+*.log
+
+# Temporary files
+*.tmp
+*.temp
+*.bak
+*~
+
+# Compression outputs
+*.gz
+
+# Tests and coverage
+TestResults/
+**/TestResults/
+test-results/
+*.coverage
+*.coveragexml
+coverage/
+coverage-report/
+**/coverage/
+coverage.json
+coverage.opencover.xml
+coverage.info
+TestResult.xml
+.sonarqube
+
+# Others
+*.dll
+*.pdb
+
+# Visual Studio Code
+.vscode/
+
+# Rider
+.idea/
+
+# Visual Studio cache/options
+.vs/
+
+# .NET Core
+project.lock.json
+project.fragment.lock.json
+artifacts/
+
+# ASP.NET Core secrets
+appsettings.Development.json
+appsettings.Production.json
+*.user
+
+# User Secrets
+**/appsettings.*.json
+!**/appsettings.json
+secrets.json

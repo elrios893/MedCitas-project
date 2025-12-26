@@ -1,0 +1,224 @@
+@model MedCitas.Core.Entities.Paciente
+
+@{
+  ViewData["Title"] = "Mi Perfil";
+}
+
+<div class="container mt-5">
+    <div class="row justify-content-center">
+        <div class="col-md-10">
+    <div class="card shadow-lg">
+    <div class="card-header bg-primary text-white">
+         <h3 class="mb-0">
+     <i class="fas fa-user-circle"></i> Mi Perfil
+   </h3>
+    </div>
+       <div class="card-body">
+      @if (TempData["MensajeExito"] != null)
+   {
+  <div class="alert alert-success alert-dismissible fade show" role="alert">
+<i class="fas fa-check-circle"></i> @TempData["MensajeExito"]
+         <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Cerrar"></button>
+      </div>
+        }
+
+    @if (ViewBag.Error != null)
+    {
+           <div class="alert alert-danger alert-dismissible fade show" role="alert">
+       <i class="fas fa-exclamation-triangle"></i> @ViewBag.Error
+     <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Cerrar"></button>
+       </div>
+       }
+
+        <form asp-action="ActualizarPerfil" method="post" id="perfilForm">
+       @Html.AntiForgeryToken()
+
+          <div class="row">
+ <!-- Información Personal -->
+  <div class="col-md-6">
+        <h5 class="mb-3 text-primary">
+      <i class="fas fa-id-card"></i> Información Personal
+ </h5>
+
+  <div class="mb-3">
+         <label for="NombreCompleto" class="form-label">Nombre Completo *</label>
+     <input asp-for="NombreCompleto" id="NombreCompleto" class="form-control" required 
+      minlength="3" maxlength="100" />
+          <span asp-validation-for="NombreCompleto" class="text-danger"></span>
+     </div>
+
+        <div class="row">
+        <div class="col-md-6 mb-3">
+           <label for="TipoDocumento" class="form-label">Tipo Documento *</label>
+  <select asp-for="TipoDocumento" id="TipoDocumento" class="form-select" required>
+   <option value="CC">Cédula de Ciudadanía</option>
+   <option value="TI">Tarjeta de Identidad</option>
+       <option value="CE">Cédula de Extranjería</option>
+     <option value="PP">Pasaporte</option>
+  </select>
+     </div>
+
+    <div class="col-md-6 mb-3">
+        <label for="NumeroDocumento" class="form-label">Número Documento *</label>
+                <input asp-for="NumeroDocumento" id="NumeroDocumento" class="form-control" required 
+       pattern="[0-9]{6,20}" title="Solo números, entre 6 y 20 dígitos" />
+     <span asp-validation-for="NumeroDocumento" class="text-danger"></span>
+        </div>
+   </div>
+
+    <div class="mb-3">
+     <label for="Telefono" class="form-label">Teléfono *</label>
+  <input asp-for="Telefono" id="Telefono" class="form-control" type="tel" required 
+    pattern="[0-9]{7,15}" title="Solo números, entre 7 y 15 dígitos" />
+   <span asp-validation-for="Telefono" class="text-danger"></span>
+  </div>
+
+           <div class="mb-3">
+       <label for="CorreoElectronico" class="form-label">Correo Electrónico *</label>
+             <input asp-for="CorreoElectronico" id="CorreoElectronico" class="form-control" type="email" required />
+       <span asp-validation-for="CorreoElectronico" class="text-danger"></span>
+      <small class="form-text text-muted">
+     <i class="fas fa-info-circle"></i> Recibirás un correo si cambias tu email
+</small>
+    </div>
+  </div>
+
+      <!-- Cambio de Contraseña -->
+   <div class="col-md-6">
+   <h5 class="mb-3 text-primary">
+    <i class="fas fa-lock"></i> Cambiar Contraseña
+         </h5>
+
+         <div class="alert alert-info">
+     <i class="fas fa-info-circle"></i> 
+       Deja estos campos vacíos si no deseas cambiar tu contraseña
+          </div>
+
+     <div class="mb-3">
+     <label for="PasswordActual" class="form-label">Contraseña Actual</label>
+   <input type="password" name="PasswordActual" id="PasswordActual" 
+  class="form-control" autocomplete="current-password" />
+        <small class="form-text text-muted">Requerida solo si cambias la contraseña</small>
+     </div>
+
+  <div class="mb-3">
+    <label for="NuevaPassword" class="form-label">Nueva Contraseña</label>
+    <input type="password" name="NuevaPassword" id="NuevaPassword" 
+        class="form-control" minlength="8" autocomplete="new-password" />
+       <small class="form-text text-muted">
+    Mínimo 8 caracteres, incluye mayúsculas, minúsculas, números y símbolos
+       </small>
+</div>
+
+        <div class="mb-3">
+<label for="ConfirmarPassword" class="form-label">Confirmar Nueva Contraseña</label>
+        <input type="password" name="ConfirmarPassword" id="ConfirmarPassword" 
+    class="form-control" minlength="8" autocomplete="new-password" />
+     </div>
+
+          <div class="alert alert-warning mt-3">
+        <i class="fas fa-exclamation-triangle"></i> 
+  <strong>Importante:</strong> Si cambias tu contraseña, recibirás un correo de confirmación.
+  </div>
+    </div>
+  </div>
+
+    <hr class="my-4" />
+
+  <div class="d-flex justify-content-between">
+         <a asp-controller="Home" asp-action="Index" class="btn btn-secondary">
+         <i class="fas fa-arrow-left"></i> Volver
+        </a>
+   <button type="submit" class="btn btn-primary btn-lg">
+     <i class="fas fa-save"></i> Guardar Cambios
+       </button>
+</div>
+    </form>
+       </div>
+ </div>
+
+      <!-- Información de Cuenta -->
+  <div class="card shadow-lg mt-4">
+   <div class="card-header bg-secondary text-white">
+ <h5 class="mb-0">
+     <i class="fas fa-info-circle"></i> Información de la Cuenta
+   </h5>
+      </div>
+ <div class="card-body">
+              <div class="row">
+           <div class="col-md-4 mb-3">
+      <p class="mb-1 text-muted">Fecha de Nacimiento</p>
+          <p class="fw-bold">@Model.FechaNacimiento.ToString("dd/MM/yyyy")</p>
+ </div>
+    <div class="col-md-4 mb-3">
+    <p class="mb-1 text-muted">Sexo</p>
+   <p class="fw-bold">@(Model.Sexo == "M" ? "Masculino" : "Femenino")</p>
+    </div>
+        <div class="col-md-4 mb-3">
+     <p class="mb-1 text-muted">EPS</p>
+          <p class="fw-bold">@Model.Eps</p>
+        </div>
+       <div class="col-md-4 mb-3">
+       <p class="mb-1 text-muted">Tipo de Sangre</p>
+    <p class="fw-bold">@Model.TipoSangre</p>
+      </div>
+        <div class="col-md-4 mb-3">
+              <p class="mb-1 text-muted">Estado de Verificación</p>
+      <p class="fw-bold">
+@if (Model.EstaVerificado)
+  {
+            <span class="badge bg-success">
+  <i class="fas fa-check-circle"></i> Verificado
+      </span>
+               }
+         else
+   {
+      <span class="badge bg-warning">
+     <i class="fas fa-clock"></i> Pendiente
+</span>
+      }
+          </p>
+       </div>
+  <div class="col-md-4 mb-3">
+  <p class="mb-1 text-muted">Fecha de Registro</p>
+        <p class="fw-bold">@Model.FechaRegistro.ToString("dd/MM/yyyy")</p>
+       </div>
+</div>
+  </div>
+    </div>
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+    @{await Html.RenderPartialAsync("_ValidationScriptsPartial");}
+ <script>
+        // Validación de confirmación de contraseña
+    document.getElementById('perfilForm').addEventListener('submit', function(e) {
+ const nuevaPassword = document.getElementById('NuevaPassword').value;
+       const confirmarPassword = document.getElementById('ConfirmarPassword').value;
+  const passwordActual = document.getElementById('PasswordActual').value;
+
+            // Si se intenta cambiar contraseña
+     if (nuevaPassword || confirmarPassword) {
+        if (!passwordActual) {
+           e.preventDefault();
+  alert('Debes ingresar tu contraseña actual para cambiarla');
+   return false;
+    }
+
+      if (nuevaPassword !== confirmarPassword) {
+     e.preventDefault();
+   alert('Las contraseñas nuevas no coinciden');
+      return false;
+        }
+
+     if (nuevaPassword.length < 8) {
+     e.preventDefault();
+         alert('La nueva contraseña debe tener al menos 8 caracteres');
+         return false;
+                }
+   }
+    });
+    </script>
+}

@@ -1,0 +1,252 @@
+﻿@{
+    ViewData["Title"] = "Dashboard Administrativo";
+    var adminNombre = ViewBag.AdminNombre ?? "Administrador";
+    var totalPacientes = ViewBag.TotalPacientes ?? 0;
+    var totalDoctores = ViewBag.TotalDoctores ?? 0;
+    var totalAdmins = ViewBag.TotalAdmins ?? 0;
+}
+
+<div class="container-fluid py-4">
+    <!-- Header -->
+    <div class="row mb-4">
+        <div class="col-12">
+            <div class="d-flex justify-content-between align-items-center">
+                <div>
+                    <h1 class="h3 mb-1">
+                        <i class="bi bi-speedometer2"></i> Dashboard Administrativo
+                    </h1>
+                    <p class="text-muted mb-0">
+                        Bienvenido, <strong>@adminNombre</strong>
+                    </p>
+                </div>
+                <div>
+                    <a asp-action="Logout" class="btn btn-outline-danger">
+                        <i class="bi bi-box-arrow-right"></i> Cerrar Sesión
+                    </a>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Estadísticas -->
+    <div class="row mb-4">
+        <div class="col-md-4">
+            <div class="card border-0 shadow-sm stat-card stat-card-pacientes">
+                <div class="card-body">
+                    <div class="d-flex align-items-center">
+                        <div class="stat-icon bg-primary text-white">
+                            <i class="bi bi-people-fill"></i>
+                        </div>
+                        <div class="ms-3">
+                            <h3 class="mb-0">@totalPacientes</h3>
+                            <p class="text-muted mb-0">Pacientes Registrados</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="col-md-4">
+            <div class="card border-0 shadow-sm stat-card stat-card-doctores">
+                <div class="card-body">
+                    <div class="d-flex align-items-center">
+                        <div class="stat-icon bg-success text-white">
+                            <i class="bi bi-hospital-fill"></i>
+                        </div>
+                        <div class="ms-3">
+                            <h3 class="mb-0">@totalDoctores</h3>
+                            <p class="text-muted mb-0">Médicos Activos</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="col-md-4">
+            <div class="card border-0 shadow-sm stat-card stat-card-admins">
+                <div class="card-body">
+                    <div class="d-flex align-items-center">
+                        <div class="stat-icon bg-warning text-white">
+                            <i class="bi bi-shield-fill-check"></i>
+                        </div>
+                        <div class="ms-3">
+                            <h3 class="mb-0">@totalAdmins</h3>
+                            <p class="text-muted mb-0">Administradores</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Acciones Rápidas -->
+    <div class="row mb-4">
+        <div class="col-12">
+            <h4 class="mb-3">
+                <i class="bi bi-lightning-charge-fill"></i> Acciones Rápidas
+            </h4>
+        </div>
+
+        <div class="col-md-3">
+            <div class="card border-0 shadow-sm action-card">
+                <div class="card-body text-center">
+                    <div class="action-icon bg-primary bg-opacity-10 text-primary mb-3">
+                        <i class="bi bi-person-plus-fill"></i>
+                    </div>
+                    <h5 class="card-title">Registrar Paciente</h5>
+                    <p class="card-text text-muted small">Agregar un nuevo paciente al sistema</p>
+                    <a asp-action="RegistrarPaciente" class="btn btn-primary btn-sm">
+                        <i class="bi bi-plus-circle"></i> Registrar
+                    </a>
+                </div>
+            </div>
+        </div>
+
+        <div class="col-md-3">
+            <div class="card border-0 shadow-sm action-card">
+                <div class="card-body text-center">
+                    <div class="action-icon bg-success bg-opacity-10 text-success mb-3">
+                        <i class="bi bi-hospital"></i>
+                    </div>
+                    <h5 class="card-title">Registrar Médico</h5>
+                    <p class="card-text text-muted small">Agregar un nuevo médico al sistema</p>
+                    <a asp-action="RegistrarMed" class="btn btn-success btn-sm">
+                        <i class="bi bi-plus-circle"></i> Registrar
+                    </a>
+                </div>
+            </div>
+        </div>
+
+        <div class="col-md-3">
+            <div class="card border-0 shadow-sm action-card">
+                <div class="card-body text-center">
+                    <div class="action-icon bg-warning bg-opacity-10 text-warning mb-3">
+                        <i class="bi bi-shield-fill-plus"></i>
+                    </div>
+                    <h5 class="card-title">Registrar Admin</h5>
+                    <p class="card-text text-muted small">Agregar un nuevo administrador</p>
+                    <a asp-action="RegistrarAdmin" class="btn btn-warning btn-sm">
+                        <i class="bi bi-plus-circle"></i> Registrar
+                    </a>
+                </div>
+            </div>
+        </div>
+
+        <div class="col-md-3">
+            <div class="card border-0 shadow-sm action-card">
+                <div class="card-body text-center">
+                    <div class="action-icon bg-info bg-opacity-10 text-info mb-3">
+                        <i class="bi bi-list-ul"></i>
+                    </div>
+                    <h5 class="card-title">Ver Usuarios</h5>
+                    <p class="card-text text-muted small">Listar todos los usuarios del sistema</p>
+                    <a asp-action="ListarUsuarios" class="btn btn-info btn-sm">
+                        <i class="bi bi-eye"></i> Ver Lista
+                    </a>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Información del Sistema -->
+    <div class="row">
+        <div class="col-12">
+            <div class="card border-0 shadow-sm">
+                <div class="card-header bg-light">
+                    <h5 class="mb-0">
+                        <i class="bi bi-info-circle"></i> Información del Sistema
+                    </h5>
+                </div>
+                <div class="card-body">
+                    <div class="row">
+                        <div class="col-md-6">
+                            <h6 class="fw-bold">Estadísticas Generales</h6>
+                            <ul class="list-unstyled">
+                                <li class="mb-2">
+                                    <i class="bi bi-check-circle text-success"></i>
+                                    Sistema operativo desde: <strong>2025</strong>
+                                </li>
+                                <li class="mb-2">
+                                    <i class="bi bi-check-circle text-success"></i>
+                                    Versión actual: <strong>1.0.0</strong>
+                                </li>
+                                <li class="mb-2">
+                                    <i class="bi bi-check-circle text-success"></i>
+                                    Cobertura de tests: <strong>85%</strong>
+                                </li>
+                            </ul>
+                        </div>
+                        <div class="col-md-6">
+                            <h6 class="fw-bold">Accesos Directos</h6>
+                            <div class="d-grid gap-2">
+                                <a asp-action="ListarUsuarios" class="btn btn-outline-primary btn-sm">
+                                    <i class="bi bi-table"></i> Ver Todos los Usuarios
+                                </a>
+                                <a asp-controller="Home" asp-action="Index" class="btn btn-outline-secondary btn-sm">
+                                    <i class="bi bi-house"></i> Ir al Sitio Principal
+                                </a>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+@section Styles {
+    <style>
+        .stat-card {
+            transition: transform 0.3s ease, box-shadow 0.3s ease;
+        }
+
+            .stat-card:hover {
+                transform: translateY(-5px);
+                box-shadow: 0 10px 20px rgba(0,0,0,0.1) !important;
+            }
+
+        .stat-icon {
+            width: 60px;
+            height: 60px;
+            border-radius: 12px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1.8rem;
+        }
+
+        .action-card {
+            transition: transform 0.3s ease, box-shadow 0.3s ease;
+            height: 100%;
+        }
+
+            .action-card:hover {
+                transform: translateY(-5px);
+                box-shadow: 0 10px 20px rgba(0,0,0,0.15) !important;
+            }
+
+        .action-icon {
+            width: 80px;
+            height: 80px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            margin: 0 auto;
+            font-size: 2.5rem;
+        }
+
+        .card-body {
+            padding: 1.5rem;
+        }
+
+        h3 {
+            font-weight: 700;
+            color: #2c3e50;
+        }
+
+        .text-muted {
+            font-size: 0.9rem;
+        }
+    </style>
+}

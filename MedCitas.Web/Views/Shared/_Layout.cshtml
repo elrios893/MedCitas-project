@@ -1,0 +1,382 @@
+﻿@using Microsoft.AspNetCore.Http
+@{
+    // Detectar tipo de usuario logueado
+    var pacienteId = Context.Session.GetString("PacienteId");
+    var pacienteNombre = Context.Session.GetString("PacienteNombre");
+
+    var adminId = Context.Session.GetString("AdminId");
+    var adminNombre = Context.Session.GetString("AdminNombre");
+
+    var medicoId = Context.Session.GetString("DoctorId");
+    var medicoNombre = Context.Session.GetString("DoctorNombre");
+
+    var estaAutenticado = !string.IsNullOrEmpty(pacienteId) || !string.IsNullOrEmpty(adminId) || !string.IsNullOrEmpty(medicoId);
+}
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>@ViewData["Title"] - MedCitas</title>
+    <link rel="stylesheet" href="~/lib/bootstrap/dist/css/bootstrap.min.css" />
+    <link rel="stylesheet" href="~/css/site.css" asp-append-version="true" />
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.0/font/bootstrap-icons.css">
+    @await RenderSectionAsync("Styles", required: false)
+    <style>
+        /* ✅ Línea azul encima del navbar */
+        .top-bar {
+            height: 10px;
+            background: linear-gradient(90deg, #0d6efd 0%, #0056b3 100%);
+            width: 100%;
+        }
+
+        /* ✅ Logo redimensionado */
+        .navbar-brand img {
+            height: 120px; /* Ajusta este valor según prefieras */
+            width: auto;
+            object-fit: contain;
+        }
+
+        /* ✅ Ajuste responsive del logo */
+        @@media (max-width: 576px) {
+            .navbar-brand img {
+                height: 100px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <header>
+        <!-- ✅ Línea azul superior -->
+        <div class="top-bar"></div>
+
+        <nav class="navbar navbar-expand-sm navbar-toggleable-sm navbar-light bg-white border-bottom box-shadow mb-3">
+            <div class="container">
+                <a class="navbar-brand fw-bold text-primary" asp-area="" asp-controller="Home" asp-action="Index">
+                    <img src="~/img/logo-image.png" alt="Logo MedCitas" />
+                </a>
+                <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target=".navbar-collapse" aria-controls="navbarSupportedContent"
+                        aria-expanded="false" aria-label="Toggle navigation">
+                    <span class="navbar-toggler-icon"></span>
+                </button>
+                <div class="navbar-collapse collapse d-sm-inline-flex justify-content-between">
+                    <ul class="navbar-nav flex-grow-1">
+                        <li class="nav-item">
+                            <a class="nav-link text-dark" asp-area="" asp-controller="Home" asp-action="Index">
+                                <i class="bi bi-house-door"></i> Inicio
+                            </a>
+                        </li>
+
+                        @* ========================================
+                           NAVEGACIÓN PARA PACIENTE
+                           ======================================== *@
+                        @if (!string.IsNullOrEmpty(pacienteId))
+                        {
+                            <li class="nav-item">
+                                <a class="nav-link text-dark" asp-controller="Paciente" asp-action="Dashboard">
+                                    <i class="bi bi-speedometer2"></i> Dashboard
+                                </a>
+                            </li>
+                            <li class="nav-item">
+                                <a class="nav-link text-dark" asp-controller="Cita" asp-action="MisCitas">
+                                    <i class="bi bi-calendar-check"></i> Mis Citas
+                                </a>
+                            </li>
+                            <li class="nav-item">
+                                <a class="nav-link text-dark" asp-controller="Cita" asp-action="Agendar">
+                                    <i class="bi bi-calendar-plus"></i> Agendar Cita
+                                </a>
+                            </li>
+                        }
+
+                        @* ========================================
+                           NAVEGACIÓN PARA ADMIN
+                           ======================================== *@
+                        else if (!string.IsNullOrEmpty(adminId))
+                        {
+                            <li class="nav-item">
+                                <a class="nav-link text-dark" asp-controller="Admin" asp-action="Dashboard">
+                                    <i class="bi bi-speedometer2"></i> Dashboard
+                                </a>
+                            </li>
+                            <li class="nav-item">
+                                <a class="nav-link text-dark" asp-controller="Admin" asp-action="ListarUsuarios">
+                                    <i class="bi bi-people"></i> Usuarios
+                                </a>
+                            </li>
+                            <li class="nav-item dropdown">
+                                <a class="nav-link dropdown-toggle text-dark" href="#" id="registrosDropdown" role="button" data-bs-toggle="dropdown" aria-expanded="false">
+                                    <i class="bi bi-person-plus"></i> Registrar
+                                </a>
+                                <ul class="dropdown-menu" aria-labelledby="registrosDropdown">
+                                    <li>
+                                        <a class="dropdown-item" asp-controller="Admin" asp-action="RegistrarPaciente">
+                                            <i class="bi bi-person"></i> Paciente
+                                        </a>
+                                    </li>
+                                    <li>
+                                        <a class="dropdown-item" asp-controller="Admin" asp-action="RegistrarDoctor">
+                                            <i class="bi bi-hospital"></i> Médico
+                                        </a>
+                                    </li>
+                                    <li>
+                                        <a class="dropdown-item" asp-controller="Admin" asp-action="RegistrarAdmin">
+                                            <i class="bi bi-shield-check"></i> Administrador
+                                        </a>
+                                    </li>
+                                </ul>
+                            </li>
+                        }
+
+                        @* ========================================
+                           NAVEGACIÓN PARA MÉDICO
+                           ======================================== *@
+                        else if (!string.IsNullOrEmpty(medicoId))
+                        {
+                            <li class="nav-item">
+                                <a class="nav-link text-dark" asp-controller="Medico" asp-action="Calendario">
+                                    <i class="bi bi-calendar3"></i> Calendario
+                                </a>
+                            </li>
+                            <li class="nav-item">
+                                <a class="nav-link text-dark" asp-controller="Medico" asp-action="MisPacientes">
+                                    <i class="bi bi-people"></i> Mis Pacientes
+                                </a>
+                            </li>
+                        }
+
+                        @* ========================================
+                           NAVEGACIÓN PARA NO AUTENTICADOS
+                           ======================================== *@
+                        else
+                        {
+                            <li class="nav-item">
+                                <a class="nav-link text-dark" asp-area="" asp-controller="Home" asp-action="Privacy">
+                                    <i class="bi bi-shield-check"></i> Privacidad
+                                </a>
+                            </li>
+                        }
+                    </ul>
+
+                    <ul class="navbar-nav">
+                        @* ========================================
+                           DROPDOWN PARA PACIENTE
+                           ======================================== *@
+                        @if (!string.IsNullOrEmpty(pacienteId))
+                        {
+                            <li class="nav-item dropdown">
+                                <a class="nav-link dropdown-toggle text-dark" href="#" id="userDropdown" role="button" data-bs-toggle="dropdown" aria-expanded="false">
+                                    <i class="bi bi-person-circle"></i>
+                                    @pacienteNombre
+                                </a>
+                                <ul class="dropdown-menu dropdown-menu-end" aria-labelledby="userDropdown">
+                                    <li>
+                                        <a class="dropdown-item" asp-controller="Paciente" asp-action="Perfil">
+                                            <i class="bi bi-person"></i> Mi Perfil
+                                        </a>
+                                    </li>
+                                    <li>
+                                        <a class="dropdown-item" asp-controller="Cita" asp-action="MisCitas">
+                                            <i class="bi bi-calendar-check"></i> Mis Citas
+                                        </a>
+                                    </li>
+                                    <li><hr class="dropdown-divider"></li>
+                                    <li>
+                                        <a class="dropdown-item text-danger" asp-controller="Paciente" asp-action="Logout">
+                                            <i class="bi bi-box-arrow-right"></i> Cerrar Sesión
+                                        </a>
+                                    </li>
+                                </ul>
+                            </li>
+                        }
+
+                        @* ========================================
+                           DROPDOWN PARA ADMIN
+                           ======================================== *@
+                        else if (!string.IsNullOrEmpty(adminId))
+                        {
+                            <li class="nav-item dropdown">
+                                <a class="nav-link dropdown-toggle text-dark" href="#" id="adminDropdown" role="button" data-bs-toggle="dropdown" aria-expanded="false">
+                                    <i class="bi bi-shield-fill-check text-warning"></i>
+                                    @adminNombre
+                                </a>
+                                <ul class="dropdown-menu dropdown-menu-end" aria-labelledby="adminDropdown">
+                                    <li>
+                                        <a class="dropdown-item" asp-controller="Admin" asp-action="Dashboard">
+                                            <i class="bi bi-speedometer2"></i> Dashboard
+                                        </a>
+                                    </li>
+                                    <li>
+                                        <a class="dropdown-item" asp-controller="Admin" asp-action="ListarUsuarios">
+                                            <i class="bi bi-people"></i> Gestión de Usuarios
+                                        </a>
+                                    </li>
+                                    <li><hr class="dropdown-divider"></li>
+                                    <li>
+                                        <a class="dropdown-item text-danger" asp-controller="Admin" asp-action="Logout">
+                                            <i class="bi bi-box-arrow-right"></i> Cerrar Sesión
+                                        </a>
+                                    </li>
+                                </ul>
+                            </li>
+                        }
+
+                        @* ========================================
+                           DROPDOWN PARA MÉDICO
+                           ======================================== *@
+                        else if (!string.IsNullOrEmpty(medicoId))
+                        {
+                            <li class="nav-item dropdown">
+                                <a class="nav-link dropdown-toggle text-dark" href="#" id="medicoDropdown" role="button" data-bs-toggle="dropdown" aria-expanded="false">
+                                    <i class="bi bi-hospital text-success"></i>
+                                    @medicoNombre
+                                </a>
+                                <ul class="dropdown-menu dropdown-menu-end" aria-labelledby="medicoDropdown">
+                                    <li>
+                                        <a class="dropdown-item" asp-controller="Medico" asp-action="Dashboard">
+                                            <i class="bi bi-speedometer2"></i> Dashboard
+                                        </a>
+                                    </li>
+                                    <li>
+                                        <a class="dropdown-item" asp-controller="Medico" asp-action="Calendario">
+                                            <i class="bi bi-calendar3"></i> Calendario
+                                        </a>
+                                    </li>
+                                    <li>
+                                        <a class="dropdown-item" asp-controller="Medico" asp-action="MisPacientes">
+                                            <i class="bi bi-people"></i> Mis Pacientes
+                                        </a>
+                                    </li>
+                                    <li><hr class="dropdown-divider"></li>
+                                    <li>
+                                        <a class="dropdown-item text-danger" asp-controller="Medico" asp-action="Logout">
+                                            <i class="bi bi-box-arrow-right"></i> Cerrar Sesión
+                                        </a>
+                                    </li>
+                                </ul>
+                            </li>
+                        }
+
+                        @* ========================================
+                           BOTONES PARA NO AUTENTICADOS
+                           ======================================== *@
+                        else
+                        {
+                            <li class="nav-item dropdown">
+                                <a class="nav-link dropdown-toggle text-dark" href="#" id="loginDropdown" role="button" data-bs-toggle="dropdown" aria-expanded="false">
+                                    <i class="bi bi-box-arrow-in-right"></i> Iniciar Sesión
+                                </a>
+                                <ul class="dropdown-menu dropdown-menu-end" aria-labelledby="loginDropdown">
+                                    <li>
+                                        <a class="dropdown-item" asp-controller="Paciente" asp-action="Login">
+                                            <i class="bi bi-person"></i> Paciente
+                                        </a>
+                                    </li>
+                                    <li>
+                                        <a class="dropdown-item" asp-controller="Medico" asp-action="Login">
+                                            <i class="bi bi-hospital"></i> Médico
+                                        </a>
+                                    </li>
+                                    <li>
+                                        <a class="dropdown-item" asp-controller="Admin" asp-action="Login">
+                                            <i class="bi bi-shield-check"></i> Administrador
+                                        </a>
+                                    </li>
+                                </ul>
+                            </li>
+                            <li class="nav-item">
+                                <a class="btn btn-info text-white ms-2" asp-controller="Paciente" asp-action="Registro">
+                                    <i class="bi bi-person-plus"></i> Registrarse
+                                </a>
+                            </li>
+                        }
+                    </ul>
+                </div>
+            </div>
+        </nav>
+    </header>
+
+    <div class="container-fluid px-0">
+        <main role="main">
+            @RenderBody()
+        </main>
+    </div>
+
+    <footer class="border-top footer text-muted bg-light mt-5">
+        <div class="container py-4">
+            <div class="row">
+                <div class="col-md-4">
+                    <h5 class="fw-bold text-primary">
+                        <i class="bi bi-hospital"></i> MedCitas
+                    </h5>
+                    <p class="small">Sistema de gestión de citas médicas profesional y seguro.</p>
+                </div>
+                <div class="col-md-4">
+                    <h6 class="fw-bold">Enlaces</h6>
+                    <ul class="list-unstyled">
+                        <li><a href="#" class="text-decoration-none text-muted">Términos de Servicio</a></li>
+                        <li><a asp-controller="Home" asp-action="Privacy" class="text-decoration-none text-muted">Política de Privacidad</a></li>
+
+                        @* Enlaces adicionales según tipo de usuario *@
+                        @if (!string.IsNullOrEmpty(adminId))
+                        {
+                            <li><a asp-controller="Admin" asp-action="Dashboard" class="text-decoration-none text-muted">Panel de Administración</a></li>
+                        }
+                        else if (!string.IsNullOrEmpty(medicoId))
+                        {
+                            <li><a asp-controller="Medico" asp-action="Calendario" class="text-decoration-none text-muted">Mi Calendario</a></li>
+                        }
+                        else if (!string.IsNullOrEmpty(pacienteId))
+                        {
+                            <li><a asp-controller="Cita" asp-action="Agendar" class="text-decoration-none text-muted">Agendar Cita</a></li>
+                        }
+                    </ul>
+                </div>
+                <div class="col-md-4">
+                    <h6 class="fw-bold">Contacto</h6>
+                    <p class="small text-muted">
+                        <i class="bi bi-envelope"></i> jepcertificados@gmail.com<br>
+                        <i class="bi bi-telephone"></i> +57 300 123 4567
+                    </p>
+
+                    @* Mostrar tipo de usuario logueado *@
+                    @if (estaAutenticado)
+                    {
+                        <p class="small mt-3">
+                            @if (!string.IsNullOrEmpty(pacienteId))
+                            {
+                                <span class="badge bg-primary">
+                                    <i class="bi bi-person"></i> Paciente
+                                </span>
+                            }
+                            else if (!string.IsNullOrEmpty(adminId))
+                            {
+                                <span class="badge bg-warning text-dark">
+                                    <i class="bi bi-shield-check"></i> Administrador
+                                </span>
+                            }
+                            else if (!string.IsNullOrEmpty(medicoId))
+                            {
+                                <span class="badge bg-success">
+                                    <i class="bi bi-hospital"></i> Médico
+                                </span>
+                            }
+                        </p>
+                    }
+                </div>
+            </div>
+            <hr>
+            <div class="text-center small">
+                &copy; 2025 - MedCitas | Desarrollado por
+                <a href="https://github.com/elrios893" target="_blank" class="text-decoration-none">Juan Pablo Ríos</a> &amp;
+                <a href="https://github.com/CarlosJ18G" target="_blank" class="text-decoration-none">Carlos Jiménez</a>
+            </div>
+        </div>
+    </footer>
+
+    <script src="~/lib/jquery/dist/jquery.min.js"></script>
+    <script src="~/lib/bootstrap/dist/js/bootstrap.bundle.min.js"></script>
+    <script src="~/js/site.js" asp-append-version="true"></script>
+    @await RenderSectionAsync("Scripts", required: false)
+</body>
+</html>

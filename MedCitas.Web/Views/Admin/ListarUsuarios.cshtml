@@ -1,0 +1,839 @@
+﻿
+@{
+    ViewData["Title"] = "Gestión de Usuarios";
+    var pacientes = ViewBag.Pacientes as List<MedCitas.Core.Entities.Paciente> ?? new List<MedCitas.Core.Entities.Paciente>();
+    var doctores = ViewBag.Doctores as List<MedCitas.Core.Entities.Doctor> ?? new List<MedCitas.Core.Entities.Doctor>();
+    var admins = ViewBag.Admins as List<MedCitas.Core.Entities.Admin> ?? new List<MedCitas.Core.Entities.Admin>();
+}
+
+<div class="container-fluid py-4">
+    <!-- Header -->
+    <div class="row mb-4">
+        <div class="col-12">
+            <div class="d-flex justify-content-between align-items-center">
+                <div>
+                    <h1 class="h3 mb-1">
+                        <i class="bi bi-people-fill"></i> Gestión de Usuarios
+                    </h1>
+                    <nav aria-label="breadcrumb">
+                        <ol class="breadcrumb mb-0">
+                            <li class="breadcrumb-item">
+                                <a asp-action="Dashboard">Dashboard</a>
+                            </li>
+                            <li class="breadcrumb-item active" aria-current="page">Usuarios</li>
+                        </ol>
+                    </nav>
+                </div>
+                <div>
+                    <a asp-action="Dashboard" class="btn btn-outline-secondary">
+                        <i class="bi bi-arrow-left"></i> Volver
+                    </a>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    @if (TempData["MensajeExito"] != null)
+    {
+        <div class="alert alert-success alert-dismissible fade show" role="alert">
+            <i class="bi bi-check-circle-fill"></i>
+            <strong>¡Éxito!</strong> @TempData["MensajeExito"]
+            <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+        </div>
+    }
+
+    @if (ViewBag.Error != null)
+    {
+        <div class="alert alert-danger alert-dismissible fade show" role="alert">
+            <i class="bi bi-exclamation-triangle-fill"></i>
+            <strong>Error:</strong> @ViewBag.Error
+            <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+        </div>
+    }
+
+    <!-- Estadísticas Resumidas -->
+    <div class="row mb-4">
+        <div class="col-md-4">
+            <div class="card border-0 shadow-sm">
+                <div class="card-body">
+                    <div class="d-flex align-items-center">
+                        <div class="stat-icon bg-primary text-white me-3">
+                            <i class="bi bi-people-fill"></i>
+                        </div>
+                        <div>
+                            <h4 class="mb-0">@pacientes.Count</h4>
+                            <small class="text-muted">Pacientes</small>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-4">
+            <div class="card border-0 shadow-sm">
+                <div class="card-body">
+                    <div class="d-flex align-items-center">
+                        <div class="stat-icon bg-success text-white me-3">
+                            <i class="bi bi-hospital-fill"></i>
+                        </div>
+                        <div>
+                            <h4 class="mb-0">@doctores.Count</h4>
+                            <small class="text-muted">Médicos</small>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-4">
+            <div class="card border-0 shadow-sm">
+                <div class="card-body">
+                    <div class="d-flex align-items-center">
+                        <div class="stat-icon bg-warning text-white me-3">
+                            <i class="bi bi-shield-fill-check"></i>
+                        </div>
+                        <div>
+                            <h4 class="mb-0">@admins.Count</h4>
+                            <small class="text-muted">Administradores</small>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Tabs de Usuarios -->
+    <div class="card border-0 shadow-sm">
+        <div class="card-header bg-white">
+            <ul class="nav nav-tabs card-header-tabs" id="userTabs" role="tablist">
+                <li class="nav-item" role="presentation">
+                    <button class="nav-link active" id="pacientes-tab" data-bs-toggle="tab" data-bs-target="#pacientes" type="button" role="tab" aria-controls="pacientes" aria-selected="true">
+                        <i class="bi bi-people"></i> Pacientes (@pacientes.Count)
+                    </button>
+                </li>
+                <li class="nav-item" role="presentation">
+                    <button class="nav-link" id="doctores-tab" data-bs-toggle="tab" data-bs-target="#doctores" type="button" role="tab" aria-controls="doctores" aria-selected="false">
+                        <i class="bi bi-hospital"></i> Médicos (@doctores.Count)
+                    </button>
+                </li>
+                <li class="nav-item" role="presentation">
+                    <button class="nav-link" id="admins-tab" data-bs-toggle="tab" data-bs-target="#admins" type="button" role="tab" aria-controls="admins" aria-selected="false">
+                        <i class="bi bi-shield-check"></i> Administradores (@admins.Count)
+                    </button>
+                </li>
+            </ul>
+        </div>
+        <div class="card-body">
+            <div class="tab-content" id="userTabsContent">
+                <!-- TAB PACIENTES -->
+                <div class="tab-pane fade show active" id="pacientes" role="tabpanel" aria-labelledby="pacientes-tab">
+                    <div class="d-flex justify-content-between align-items-center mb-3">
+                        <h5 class="mb-0">
+                            <i class="bi bi-list-ul"></i> Lista de Pacientes
+                        </h5>
+                        <a asp-action="RegistrarPaciente" class="btn btn-primary btn-sm">
+                            <i class="bi bi-person-plus-fill"></i> Nuevo Paciente
+                        </a>
+                    </div>
+
+                    <div class="mb-3">
+                        <input type="text" id="searchPacientes" class="form-control" placeholder="Buscar paciente por nombre, documento o correo...">
+                    </div>
+
+                    <div class="table-responsive">
+                        <table class="table table-hover align-middle" id="tablaPacientes">
+                            <thead class="table-light">
+                                <tr>
+                                    <th>Nombre</th>
+                                    <th>Documento</th>
+                                    <th>Correo</th>
+                                    <th>Teléfono</th>
+                                    <th>EPS</th>
+                                    <th>Estado</th>
+                                    <th class="text-center">Acciones</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                @if (pacientes.Any())
+                                {
+                                    @foreach (var paciente in pacientes)
+                                    {
+                                        <tr>
+                                            <td>
+                                                <div class="d-flex align-items-center">
+                                                    <div class="user-avatar bg-primary text-white me-2">
+                                                        @paciente.NombreCompleto.Substring(0, 1).ToUpper()
+                                                    </div>
+                                                    <div>
+                                                        <div class="fw-bold">@paciente.NombreCompleto</div>
+                                                        <small class="text-muted">@paciente.TipoSangre</small>
+                                                    </div>
+                                                </div>
+                                            </td>
+                                            <td>
+                                                <span class="badge bg-secondary">@paciente.TipoDocumento</span>
+                                                @paciente.NumeroDocumento
+                                            </td>
+                                            <td>
+                                                <i class="bi bi-envelope"></i>
+                                                @paciente.CorreoElectronico
+                                            </td>
+                                            <td>
+                                                <i class="bi bi-telephone"></i>
+                                                @paciente.Telefono
+                                            </td>
+                                            <td>@paciente.Eps</td>
+                                            <td>
+                                                @if (paciente.EstaVerificado)
+                                                {
+                                                    <span class="badge bg-success">
+                                                        <i class="bi bi-check-circle"></i> Verificado
+                                                    </span>
+                                                }
+                                                else
+                                                {
+                                                    <span class="badge bg-warning">
+                                                        <i class="bi bi-clock"></i> Pendiente
+                                                    </span>
+                                                }
+                                            </td>
+                                            <td class="text-center">
+                                                <button class="btn btn-sm btn-outline-info" onclick="verDetallePaciente('@paciente.Id')">
+                                                    <i class="bi bi-eye"></i>
+                                                </button>
+                                            </td>
+                                            <!--Boton Eliminar--->
+                                            <td class="text-center">
+                                                <button class="btn btn-sm btn-outline-info" onclick="eliminarPaciente('@paciente.Id', '@paciente.NombreCompleto')">
+                                                    <i class="bi bi-eraser"></i>
+                                                </button>
+                                            </td>
+                                        </tr>
+                                    }
+                                }
+                                else
+                                {
+                                    <tr>
+                                        <td colspan="7" class="text-center text-muted">
+                                            <i class="bi bi-inbox fs-1"></i>
+                                            <p class="mb-0">No hay pacientes registrados</p>
+                                        </td>
+                                    </tr>
+                                }
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+
+                <!-- TAB DOCTORES -->
+                <div class="tab-pane fade" id="doctores" role="tabpanel" aria-labelledby="doctores-tab">
+                    <div class="d-flex justify-content-between align-items-center mb-3">
+                        <h5 class="mb-0">
+                            <i class="bi bi-list-ul"></i> Lista de Médicos
+                        </h5>
+                        <a asp-action="RegistrarDoctor" class="btn btn-success btn-sm">
+                            <i class="bi bi-hospital"></i> Nuevo Médico
+                        </a>
+                    </div>
+
+                    <div class="mb-3">
+                        <input type="text" id="searchDoctores" class="form-control" placeholder="Buscar médico por nombre, licencia o especialidad...">
+                    </div>
+
+                    <div class="table-responsive">
+                        <table class="table table-hover align-middle" id="tablaDoctores">
+                            <thead class="table-light">
+                                <tr>
+                                    <th>Nombre</th>
+                                    <th>Especialidad</th>
+                                    <th>Licencia</th>
+                                    <th>Correo</th>
+                                    <th>Teléfono</th>
+                                    <th>Estado</th>
+                                    <th class="text-center">Acciones</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                @if (doctores.Any())
+                                {
+                                    @foreach (var doctor in doctores)
+                                    {
+                                        <tr>
+                                            <td>
+                                                <div class="d-flex align-items-center">
+                                                    <div class="user-avatar bg-success text-white me-2">
+                                                        @doctor.NombreCompleto.Substring(0, 1).ToUpper()
+                                                    </div>
+                                                    <div class="fw-bold">@doctor.NombreCompleto</div>
+                                                </div>
+                                            </td>
+                                            <td>
+                                                <span class="badge bg-info">
+                                                    <i class="bi bi-heart-pulse"></i>
+                                                    @doctor.Specialty?.Nombre
+                                                </span>
+                                            </td>
+                                            <td>
+                                                <code>@doctor.NumeroLicencia</code>
+                                            </td>
+                                            <td>
+                                                <i class="bi bi-envelope"></i>
+                                                @(doctor.CorreoElectronico ?? "N/A")
+                                            </td>
+                                            <td>
+                                                <i class="bi bi-telephone"></i>
+                                                @(doctor.Telefono ?? "N/A")
+                                            </td>
+                                            <td>
+                                                @if (doctor.EstaActivo)
+                                                {
+                                                    <span class="badge bg-success">
+                                                        <i class="bi bi-check-circle"></i> Activo
+                                                    </span>
+                                                }
+                                                else
+                                                {
+                                                    <span class="badge bg-danger">
+                                                        <i class="bi bi-x-circle"></i> Inactivo
+                                                    </span>
+                                                }
+                                            </td>
+                                            <td class="text-center">
+                                                <button class="btn btn-sm btn-outline-info" onclick="verDetalleDoctor('@doctor.Id')">
+                                                    <i class="bi bi-eye"></i>
+                                                </button>
+                                            </td>
+                                        </tr>
+                                    }
+                                }
+                                else
+                                {
+                                    <tr>
+                                        <td colspan="7" class="text-center text-muted">
+                                            <i class="bi bi-inbox fs-1"></i>
+                                            <p class="mb-0">No hay médicos registrados</p>
+                                        </td>
+                                    </tr>
+                                }
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+
+                <!-- TAB ADMINISTRADORES -->
+                <div class="tab-pane fade" id="admins" role="tabpanel" aria-labelledby="admins-tab">
+                    <div class="d-flex justify-content-between align-items-center mb-3">
+                        <h5 class="mb-0">
+                            <i class="bi bi-list-ul"></i> Lista de Administradores
+                        </h5>
+                        <a asp-action="RegistrarAdmin" class="btn btn-warning btn-sm">
+                            <i class="bi bi-shield-fill-plus"></i> Nuevo Administrador
+                        </a>
+                    </div>
+
+                    <div class="mb-3">
+                        <input type="text" id="searchAdmins" class="form-control" placeholder="Buscar administrador por nombre o correo...">
+                    </div>
+
+                    <div class="table-responsive">
+                        <table class="table table-hover align-middle" id="tablaAdmins">
+                            <thead class="table-light">
+                                <tr>
+                                    <th>Nombre</th>
+                                    <th>Correo</th>
+                                    <th>Teléfono</th>
+                                    <th>Fecha Registro</th>
+                                    <th>Estado</th>
+                                    <th class="text-center">Acciones</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                @if (admins.Any())
+                                {
+                                    @foreach (var admin in admins)
+                                    {
+                                        <tr>
+                                            <td>
+                                                <div class="d-flex align-items-center">
+                                                    <div class="user-avatar bg-warning text-dark me-2">
+                                                        @admin.NombreCompleto.Substring(0, 1).ToUpper()
+                                                    </div>
+                                                    <div class="fw-bold">@admin.NombreCompleto</div>
+                                                </div>
+                                            </td>
+                                            <td>
+                                                <i class="bi bi-envelope"></i>
+                                                @admin.CorreoElectronico
+                                            </td>
+                                            <td>
+                                                <i class="bi bi-telephone"></i>
+                                                @admin.Telefono
+                                            </td>
+                                            <td>
+                                                <i class="bi bi-calendar"></i>
+                                                @admin.FechaRegistro.ToString("dd/MM/yyyy")
+                                            </td>
+                                            <td>
+                                                @if (admin.EstaVerificado)
+                                                {
+                                                    <span class="badge bg-success">
+                                                        <i class="bi bi-check-circle"></i> Verificado
+                                                    </span>
+                                                }
+                                                else
+                                                {
+                                                    <span class="badge bg-warning">
+                                                        <i class="bi bi-clock"></i> Pendiente
+                                                    </span>
+                                                }
+                                            </td>
+                                            <td class="text-center">
+                                                <button class="btn btn-sm btn-outline-info" onclick="verDetalleAdmin('@admin.Id')">
+                                                    <i class="bi bi-eye"></i>
+                                                </button>
+                                            </td>
+                                        </tr>
+                                    }
+                                }
+                                else
+                                {
+                                    <tr>
+                                        <td colspan="6" class="text-center text-muted">
+                                            <i class="bi bi-inbox fs-1"></i>
+                                            <p class="mb-0">No hay administradores registrados</p>
+                                        </td>
+                                    </tr>
+                                }
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Modal Detalles (Reutilizable) -->
+<div class="modal fade" id="detalleModal" tabindex="-1" aria-labelledby="detalleModalLabel" aria-hidden="true">
+    <div class="modal-dialog modal-lg">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="detalleModalLabel">
+                    <i class="bi bi-info-circle"></i> Detalles del Usuario
+                </h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body" id="detalleContenido">
+                <!-- Contenido dinámico -->
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cerrar</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Modal de Confirmación de Eliminación -->
+<div class="modal fade" id="eliminarRegistroModal" tabindex="-1" aria-labelledby="eliminarRegistroLabel" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered">
+        <div class="modal-content">
+            <div class="modal-header bg-danger text-white">
+                <h5 class="modal-title" id="eliminarRegistroLabel">
+                    <i class="bi bi-exclamation-triangle-fill"></i> Confirmar Eliminación
+                </h5>
+                <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body">
+                <p class="mb-3">¿Estás seguro de que deseas eliminar este usuario?</p>
+                <div class="alert alert-warning mb-0">
+                    <strong id="tipoUsuario"></strong>: <span id="nombreUsuario"></span>
+                </div>
+                <p class="text-muted small mt-3 mb-0">
+                    <i class="bi bi-info-circle"></i> Esta acción no se puede deshacer.
+                </p>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">
+                    <i class="bi bi-x-circle"></i> Cancelar
+                </button>
+                <form id="formEliminar" method="post" style="display: inline;">
+                    @Html.AntiForgeryToken()
+                    <button type="submit" class="btn btn-danger">
+                        <i class="bi bi-trash"></i> Eliminar
+                    </button>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+
+@section Styles {
+    <style>
+        .stat-icon {
+            width: 50px;
+            height: 50px;
+            border-radius: 10px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1.5rem;
+        }
+
+        .user-avatar {
+            width: 35px;
+            height: 35px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: bold;
+        }
+
+        .table thead th {
+            font-weight: 600;
+            text-transform: uppercase;
+            font-size: 0.85rem;
+            letter-spacing: 0.5px;
+        }
+
+        .nav-tabs .nav-link {
+            color: #6c757d;
+        }
+
+            .nav-tabs .nav-link.active {
+                font-weight: 600;
+            }
+
+        .breadcrumb {
+            background-color: transparent;
+            padding: 0;
+            margin: 0;
+        }
+
+        .card {
+            transition: transform 0.2s;
+        }
+
+        .table tbody tr:hover {
+            background-color: #f8f9fa;
+        }
+    </style>
+}
+
+@section Scripts {
+    <script>
+        // Búsqueda en tabla de Pacientes
+        document.getElementById('searchPacientes').addEventListener('keyup', function() {
+            filterTable('tablaPacientes', this.value);
+        });
+
+        // Búsqueda en tabla de Doctores
+        document.getElementById('searchDoctores').addEventListener('keyup', function() {
+            filterTable('tablaDoctores', this.value);
+        });
+
+        // Búsqueda en tabla de Admins
+        document.getElementById('searchAdmins').addEventListener('keyup', function() {
+            filterTable('tablaAdmins', this.value);
+        });
+
+        function filterTable(tableId, searchValue) {
+            const table = document.getElementById(tableId);
+            const tr = table.getElementsByTagName('tr');
+            const filter = searchValue.toUpperCase();
+
+            for (let i = 1; i < tr.length; i++) {
+                const td = tr[i].getElementsByTagName('td');
+                let found = false;
+
+                for (let j = 0; j < td.length; j++) {
+                    if (td[j]) {
+                        const textValue = td[j].textContent || td[j].innerText;
+                        if (textValue.toUpperCase().indexOf(filter) > -1) {
+                            found = true;
+                            break;
+                        }
+                    }
+                }
+
+                tr[i].style.display = found ? '' : 'none';
+            }
+        }
+
+        function verDetallePaciente(id) {
+            showModal('Paciente', id);
+        }
+
+        function verDetalleDoctor(id) {
+            showModal('Doctor', id);
+        }
+
+        function verDetalleAdmin(id) {
+            showModal('Administrador', id);
+        }
+
+        function showModal(tipo, id) {
+            const modal = new bootstrap.Modal(document.getElementById('detalleModal'));
+            const contenido = document.getElementById('detalleContenido');
+
+            contenido.innerHTML = `
+                <div class="text-center py-4">
+                    <div class="spinner-border text-primary" role="status">
+                        <span class="visually-hidden">Cargando...</span>
+                    </div>
+                    <p class="mt-3">Cargando información del ${tipo.toLowerCase()}...</p>
+                </div>
+            `;
+
+            modal.show();
+
+            // TODO: Implementar llamada AJAX para obtener detalles
+            setTimeout(() => {
+                contenido.innerHTML = `
+                    <div class="alert alert-info">
+                        <i class="bi bi-info-circle"></i>
+                        <strong>ID del ${tipo}:</strong> ${id}
+                        <br>
+                        <small>Funcionalidad de detalles completa pendiente de implementación.</small>
+                    </div>
+                `;
+            }, 500);
+        }
+
+        // ========================================
+        // ELIMINACIÓN CON CONFIRMACIÓN
+        // ========================================
+        function eliminarPaciente(id, nombre) {
+            eliminarRegistro('Paciente', id, nombre);
+        }
+
+        function eliminarDoctor(id, nombre) {
+            eliminarRegistro('Doctor', id, nombre);
+        }
+
+        function eliminarAdministrador(id, nombre) {
+            eliminarRegistro('Admin', id, nombre);
+        }
+
+        // ✅ FUNCIÓN PRINCIPAL DE ELIMINACIÓN
+        function eliminarRegistro(clase, id, nombre) {
+            console.log('🗑️ Preparando eliminación:', { clase, id, nombre });
+
+            const modal = new bootstrap.Modal(document.getElementById('eliminarRegistroModal'));
+
+            // Actualizar contenido del modal
+            document.getElementById('tipoUsuario').textContent = clase;
+            document.getElementById('nombreUsuario').textContent = nombre;
+
+            // ✅ CAMBIO IMPORTANTE: Guardar datos para usar en confirmación
+            window.datosPendientesEliminar = { clase, id, nombre };
+
+            modal.show();
+        }
+
+        // ✅ NUEVA FUNCIÓN: Confirmar y ejecutar eliminación vía AJAX
+        async function confirmarEliminacion() {
+            const { clase, id, nombre } = window.datosPendientesEliminar;
+
+            console.log('✅ Confirmando eliminación:', { clase, id, nombre });
+
+            const btnEliminar = document.getElementById('btnConfirmarEliminar');
+            const btnCancelar = document.querySelector('#eliminarRegistroModal .btn-secondary');
+
+            // Deshabilitar botones durante la petición
+            btnEliminar.disabled = true;
+            btnCancelar.disabled = true;
+            btnEliminar.innerHTML = '<span class="spinner-border spinner-border-sm me-2"></span>Eliminando...';
+
+            try {
+                const response = await fetch(`/Admin/Eliminar${clase}/${id}`, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'RequestVerificationToken': document.querySelector('input[name="__RequestVerificationToken"]')?.value || ''
+                    }
+                });
+
+                const data = await response.json();
+
+                if (data.success) {
+                    console.log('✅ Eliminación exitosa');
+
+                    // Cerrar modal
+                    const modal = bootstrap.Modal.getInstance(document.getElementById('eliminarRegistroModal'));
+                    modal.hide();
+
+                    // Mostrar mensaje de éxito
+                    mostrarAlerta('success', data.message);
+
+                    // ✅ ELIMINAR FILA DE LA TABLA SIN RECARGAR
+                    eliminarFilaDeTabla(clase, id);
+
+                    // Actualizar contadores
+                    actualizarContadores(clase);
+                } else {
+                    console.error('❌ Error al eliminar:', data.message);
+                    mostrarAlerta('danger', data.message);
+                }
+            } catch (error) {
+                console.error('❌ Error en la petición:', error);
+                mostrarAlerta('danger', 'Error de conexión al eliminar el registro');
+            } finally {
+                // Restaurar botones
+                btnEliminar.disabled = false;
+                btnCancelar.disabled = false;
+                btnEliminar.innerHTML = '<i class="bi bi-trash"></i> Eliminar';
+            }
+        }
+
+        // ✅ FUNCIÓN: Eliminar fila de la tabla sin recargar
+        function eliminarFilaDeTabla(clase, id) {
+            let tablaId;
+            switch(clase) {
+                case 'Paciente':
+                    tablaId = 'tablaPacientes';
+                    break;
+                case 'Doctor':
+                    tablaId = 'tablaDoctores';
+                    break;
+                case 'Admin':
+                    tablaId = 'tablaAdmins';
+                    break;
+                default:
+                    return;
+            }
+
+            const tabla = document.getElementById(tablaId);
+            if (!tabla) return;
+
+            const filas = tabla.getElementsByTagName('tr');
+            for (let i = 1; i < filas.length; i++) {
+                const fila = filas[i];
+                const botones = fila.querySelectorAll('button');
+
+                // Buscar la fila que contiene el ID
+                for (let btn of botones) {
+                    const onclick = btn.getAttribute('onclick');
+                    if (onclick && onclick.includes(id)) {
+                        // Animar eliminación
+                        fila.style.transition = 'opacity 0.3s ease';
+                        fila.style.opacity = '0';
+
+                        setTimeout(() => {
+                            fila.remove();
+
+                            // Si no quedan más filas, mostrar mensaje
+                            if (tabla.getElementsByTagName('tbody')[0].getElementsByTagName('tr').length === 0) {
+                                mostrarMensajeTablaVacia(tablaId, clase);
+                            }
+                        }, 300);
+
+                        return;
+                    }
+                }
+            }
+        }
+
+        // ✅ FUNCIÓN: Mostrar mensaje cuando tabla queda vacía
+        function mostrarMensajeTablaVacia(tablaId, clase) {
+            const tabla = document.getElementById(tablaId);
+            const tbody = tabla.getElementsByTagName('tbody')[0];
+
+            const colspan = tabla.getElementsByTagName('thead')[0].getElementsByTagName('th').length;
+
+            let nombrePlural;
+            switch(clase) {
+                case 'Paciente':
+                    nombrePlural = 'pacientes';
+                    break;
+                case 'Doctor':
+                    nombrePlural = 'médicos';
+                    break;
+                case 'Admin':
+                    nombrePlural = 'administradores';
+                    break;
+            }
+
+            tbody.innerHTML = `
+                <tr>
+                    <td colspan="${colspan}" class="text-center text-muted">
+                        <i class="bi bi-inbox fs-1"></i>
+                        <p class="mb-0">No hay ${nombrePlural} registrados</p>
+                    </td>
+                </tr>
+            `;
+        }
+
+        // ✅ FUNCIÓN: Actualizar contadores en badges y tarjetas
+        function actualizarContadores(clase) {
+            let badgeId, cardId;
+
+            switch(clase) {
+                case 'Paciente':
+                    badgeId = 'pacientes-tab';
+                    cardId = 'totalPacientes';
+                    break;
+                case 'Doctor':
+                    badgeId = 'doctores-tab';
+                    cardId = 'totalDoctores';
+                    break;
+                case 'Admin':
+                    badgeId = 'admins-tab';
+                    cardId = 'totalAdmins';
+                    break;
+            }
+
+            // Actualizar badge en tab
+            const tab = document.getElementById(badgeId);
+            if (tab) {
+                const match = tab.textContent.match(/\((\d+)\)/);
+                if (match) {
+                    const nuevoTotal = parseInt(match[1]) - 1;
+                    tab.innerHTML = tab.innerHTML.replace(/\(\d+\)/, `(${nuevoTotal})`);
+                }
+            }
+
+            // Actualizar tarjeta de estadísticas
+            const card = document.querySelector('.stat-icon').closest('.card').nextElementSibling;
+            if (card) {
+                const h4 = card.querySelector('h4');
+                if (h4) {
+                    h4.textContent = parseInt(h4.textContent) - 1;
+                }
+            }
+        }
+
+        // ✅ FUNCIÓN: Mostrar alertas dinámicas
+        function mostrarAlerta(tipo, mensaje) {
+            const alertaHtml = `
+                <div class="alert alert-${tipo} alert-dismissible fade show" role="alert">
+                    <i class="bi bi-${tipo === 'success' ? 'check-circle-fill' : 'exclamation-triangle-fill'}"></i>
+                    <strong>${tipo === 'success' ? '¡Éxito!' : 'Error:'}</strong> ${mensaje}
+                    <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+                </div>
+            `;
+
+            const container = document.querySelector('.container-fluid.py-4 > .row:first-child');
+            const alertDiv = document.createElement('div');
+            alertDiv.className = 'row mb-4';
+            alertDiv.innerHTML = `<div class="col-12">${alertaHtml}</div>`;
+
+            container.insertAdjacentElement('afterend', alertDiv);
+
+            // Auto-dismiss después de 5 segundos
+            setTimeout(() => {
+                const alert = alertDiv.querySelector('.alert');
+                const bsAlert = new bootstrap.Alert(alert);
+                bsAlert.close();
+                setTimeout(() => alertDiv.remove(), 300);
+            }, 5000);
+        }
+
+        // Auto-dismiss de alertas iniciales
+        setTimeout(function () {
+            const alerts = document.querySelectorAll('.alert-dismissible');
+            alerts.forEach(function (alert) {
+                const bsAlert = new bootstrap.Alert(alert);
+                bsAlert.close();
+            });
+        }, 5000);
+    </script>
+}
