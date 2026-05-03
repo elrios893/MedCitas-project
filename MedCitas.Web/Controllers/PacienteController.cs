@@ -449,6 +449,122 @@ namespace MedCitas.Web.Controllers
             }
         }
 
+        // ============================================
+        // HISTORIA CLÍNICA
+        // ============================================
+
+        private const long MaxPdfSize = 10 * 1024 * 1024; // 10 MB
+
+        /// <summary>
+        /// POST: /Paciente/SubirHistoriaClinica
+        /// Solo disponible si la cuenta está verificada
+        /// </summary>
+        [HttpPost]
+        public async Task<IActionResult> SubirHistoriaClinica(IFormFile archivo)
+        {
+            var pacienteId = HttpContext.Session.GetString(PacienteIdSessionKey);
+            if (string.IsNullOrEmpty(pacienteId))
+                return RedirectToAction(LoginAction);
+
+            // ✅ Validar que sea PDF
+            if (archivo == null || archivo.Length == 0)
+            {
+                TempData["ErrorHistoria"] = "Por favor selecciona un archivo PDF.";
+                return RedirectToAction(nameof(Perfil));
+            }
+
+            var extension = Path.GetExtension(archivo.FileName).ToLowerInvariant();
+            if (extension != ".pdf")
+            {
+                TempData["ErrorHistoria"] = "Solo se permiten archivos en formato PDF.";
+                return RedirectToAction(nameof(Perfil));
+            }
+
+            // ✅ Validar tamaño máximo (10 MB)
+            if (archivo.Length > MaxPdfSize)
+            {
+                TempData["ErrorHistoria"] = "El archivo no puede superar los 10 MB.";
+                return RedirectToAction(nameof(Perfil));
+            }
+
+            try
+            {
+                using var memoryStream = new MemoryStream();
+                await archivo.CopyToAsync(memoryStream);
+                var bytes = memoryStream.ToArray();
+
+                await _pacienteService.GuardarHistoriaClinicaAsync(
+                    Guid.Parse(pacienteId),
+                    bytes,
+                    archivo.FileName);
+
+                _logger.LogInformation("Historia clínica subida por paciente {PacienteId}, archivo: {Archivo}",
+                    pacienteId, archivo.FileName);
+
+                TempData[MensajeExitoKey] = "Historia clínica guardada exitosamente.";
+            }
+            catch (InvalidOperationException ex)
+            {
+                _logger.LogWarning(ex, "Error de validación al subir historia para paciente {PacienteId}", pacienteId);
+                TempData["ErrorHistoria"] = ex.Message;
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "Error inesperado al subir historia para paciente {PacienteId}", pacienteId);
+                TempData["ErrorHistoria"] = "Ocurrió un error al guardar la historia clínica.";
+            }
+
+            return RedirectToAction(nameof(Perfil));
+        }
+
+        /// <summary>
+        /// POST: /Paciente/EliminarHistoriaClinica
+        /// </summary>
+        [HttpPost]
+        public async Task<IActionResult> EliminarHistoriaClinica()
+        {
+            var pacienteId = HttpContext.Session.GetString(PacienteIdSessionKey);
+            if (string.IsNullOrEmpty(pacienteId))
+                return RedirectToAction(LoginAction);
+
+            try
+            {
+                await _pacienteService.EliminarHistoriaClinicaAsync(Guid.Parse(pacienteId));
+
+                _logger.LogInformation("Historia clínica eliminada por paciente {PacienteId}", pacienteId);
+                TempData[MensajeExitoKey] = "Historia clínica eliminada correctamente.";
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "Error al eliminar historia para paciente {PacienteId}", pacienteId);
+                TempData["ErrorHistoria"] = "Error al eliminar la historia clínica.";
+            }
+
+            return RedirectToAction(nameof(Perfil));
+        }
+
+        /// <summary>
+        /// GET: /Paciente/DescargarHistoriaClinica
+        /// Permite al paciente descargar su propio PDF
+        /// </summary>
+        [HttpGet]
+        public async Task<IActionResult> DescargarHistoriaClinica()
+        {
+            var pacienteId = HttpContext.Session.GetString(PacienteIdSessionKey);
+            if (string.IsNullOrEmpty(pacienteId))
+                return RedirectToAction(LoginAction);
+
+            var resultado = await _pacienteService.ObtenerHistoriaClinicaAsync(Guid.Parse(pacienteId));
+
+            if (resultado == null)
+            {
+                TempData["ErrorHistoria"] = "No tienes una historia clínica cargada.";
+                return RedirectToAction(nameof(Perfil));
+            }
+
+            return File(resultado.Value.Archivo, "application/pdf", resultado.Value.NombreArchivo);
+        }
+
 
     }
 }

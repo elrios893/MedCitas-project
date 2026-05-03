@@ -1,11 +1,11 @@
-﻿# 🏥 MedCitas - Sistema de Gestión de Citas Médicas
+# 🏥 MedCitas - Sistema de Gestión de Citas Médicas
 
 [![.NET](https://img.shields.io/badge/.NET-9.0-512BD4?logo=dotnet)](https://dotnet.microsoft.com/)
 [![PostgreSQL](https://img.shields.io/badge/PostgreSQL-14+-316192?logo=postgresql)](https://www.postgresql.org/)
 [![License](https://img.shields.io/badge/license-MIT-blue.svg)](LICENSE)
 
 Sistema web para la gestión de citas médicas desarrollado con **ASP.NET Core 9** (Razor Pages + MVC), **Entity Framework Core** y **PostgreSQL**.
-**Esta es una migracion del repositorio original. El historial de commits puedes verlo original, en mi rama pablodev:** https://github.com/CarlosJ18G/MedCitas/tree/pablodev 
+**Esta es una migracion del repositorio original. El historial de commits puedes verlo en el original, en mi rama pablodev:** https://github.com/CarlosJ18G/MedCitas/tree/pablodev 
 
 ## 📋 Tabla de Contenidos
 

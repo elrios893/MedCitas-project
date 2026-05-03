@@ -1,224 +1,338 @@
-@model MedCitas.Core.Entities.Paciente
+ï»¿@model MedCitas.Core.Entities.Paciente
 
 @{
-  ViewData["Title"] = "Mi Perfil";
+    ViewData["Title"] = "Mi Perfil";
 }
 
 <div class="container mt-5">
     <div class="row justify-content-center">
         <div class="col-md-10">
-    <div class="card shadow-lg">
-    <div class="card-header bg-primary text-white">
-         <h3 class="mb-0">
-     <i class="fas fa-user-circle"></i> Mi Perfil
-   </h3>
-    </div>
-       <div class="card-body">
-      @if (TempData["MensajeExito"] != null)
-   {
-  <div class="alert alert-success alert-dismissible fade show" role="alert">
-<i class="fas fa-check-circle"></i> @TempData["MensajeExito"]
-         <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Cerrar"></button>
-      </div>
-        }
+            <div class="card shadow-lg">
+                <div class="card-header bg-primary text-white">
+                    <h3 class="mb-0">
+                        <i class="fas fa-user-circle"></i> Mi Perfil
+                    </h3>
+                </div>
+                <div class="card-body">
+                    @if (TempData["MensajeExito"] != null)
+                    {
+                        <div class="alert alert-success alert-dismissible fade show" role="alert">
+                            <i class="fas fa-check-circle"></i> @TempData["MensajeExito"]
+                            <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Cerrar"></button>
+                        </div>
+                    }
 
-    @if (ViewBag.Error != null)
-    {
-           <div class="alert alert-danger alert-dismissible fade show" role="alert">
-       <i class="fas fa-exclamation-triangle"></i> @ViewBag.Error
-     <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Cerrar"></button>
-       </div>
-       }
+                    @if (ViewBag.Error != null)
+                    {
+                        <div class="alert alert-danger alert-dismissible fade show" role="alert">
+                            <i class="fas fa-exclamation-triangle"></i> @ViewBag.Error
+                            <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Cerrar"></button>
+                        </div>
+                    }
 
-        <form asp-action="ActualizarPerfil" method="post" id="perfilForm">
-       @Html.AntiForgeryToken()
+                    @if (TempData["ErrorHistoria"] != null)
+                    {
+                        <div class="alert alert-danger alert-dismissible fade show" role="alert">
+                            <i class="fas fa-exclamation-triangle"></i> @TempData["ErrorHistoria"]
+                            <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Cerrar"></button>
+                        </div>
+                    }
 
-          <div class="row">
- <!-- Información Personal -->
-  <div class="col-md-6">
-        <h5 class="mb-3 text-primary">
-      <i class="fas fa-id-card"></i> Información Personal
- </h5>
+                    <form asp-action="ActualizarPerfil" method="post" id="perfilForm">
+                        @Html.AntiForgeryToken()
 
-  <div class="mb-3">
-         <label for="NombreCompleto" class="form-label">Nombre Completo *</label>
-     <input asp-for="NombreCompleto" id="NombreCompleto" class="form-control" required 
-      minlength="3" maxlength="100" />
-          <span asp-validation-for="NombreCompleto" class="text-danger"></span>
-     </div>
+                        <div class="row">
+                            <!-- InformaciÃ³n Personal -->
+                            <div class="col-md-6">
+                                <h5 class="mb-3 text-primary">
+                                    <i class="fas fa-id-card"></i> InformaciÃ³n Personal
+                                </h5>
 
-        <div class="row">
-        <div class="col-md-6 mb-3">
-           <label for="TipoDocumento" class="form-label">Tipo Documento *</label>
-  <select asp-for="TipoDocumento" id="TipoDocumento" class="form-select" required>
-   <option value="CC">Cédula de Ciudadanía</option>
-   <option value="TI">Tarjeta de Identidad</option>
-       <option value="CE">Cédula de Extranjería</option>
-     <option value="PP">Pasaporte</option>
-  </select>
-     </div>
+                                <div class="mb-3">
+                                    <label for="NombreCompleto" class="form-label fw-semibold">Nombre Completo *</label>
+                                    <input asp-for="NombreCompleto" id="NombreCompleto" class="form-control" required
+                                           minlength="3" maxlength="100" />
+                                    <span asp-validation-for="NombreCompleto" class="text-danger"></span>
+                                </div>
 
-    <div class="col-md-6 mb-3">
-        <label for="NumeroDocumento" class="form-label">Número Documento *</label>
-                <input asp-for="NumeroDocumento" id="NumeroDocumento" class="form-control" required 
-       pattern="[0-9]{6,20}" title="Solo números, entre 6 y 20 dígitos" />
-     <span asp-validation-for="NumeroDocumento" class="text-danger"></span>
-        </div>
-   </div>
+                                <fieldset disabled>
+                                    <div class="row mb-3">
+                                        <div class="col-md-6 mb-1">
+                                            <label for="TipoDocumento" class="form-label fw-semibold">Tipo Documento *</label>
+                                            <select asp-for="TipoDocumento" id="TipoDocumento" class="form-select" required>
+                                                <option value="CC">CÃ©dula de CiudadanÃ­a</option>
+                                                <option value="TI">Tarjeta de Identidad</option>
+                                                <option value="CE">CÃ©dula de ExtranjerÃ­a</option>
+                                                <option value="PP">Pasaporte</option>
+                                            </select>
+                                        </div>
+                                        <div class="col-md-6 mb-1">
+                                            <label for="NumeroDocumento" class="form-label fw-semibold">NÃºmero Documento *</label>
+                                            <input asp-for="NumeroDocumento" id="NumeroDocumento" class="form-control" required
+                                                   pattern="[0-9]{6,20}" title="Solo nÃºmeros, entre 6 y 20 dÃ­gitos" />
+                                            <span asp-validation-for="NumeroDocumento" class="text-danger"></span>
+                                        </div>
+                                        <small class="form-text text-muted">
+                                            <i class="fas fa-info-circle"></i> Contacta con el equipo de MedCitas para cambiar tu documento.
+                                        </small>
+                                    </div>
+                                </fieldset>
 
-    <div class="mb-3">
-     <label for="Telefono" class="form-label">Teléfono *</label>
-  <input asp-for="Telefono" id="Telefono" class="form-control" type="tel" required 
-    pattern="[0-9]{7,15}" title="Solo números, entre 7 y 15 dígitos" />
-   <span asp-validation-for="Telefono" class="text-danger"></span>
-  </div>
+                                <div class="mb-3">
+                                    <label for="Telefono" class="form-label fw-semibold">TelÃ©fono *</label>
+                                    <input asp-for="Telefono" id="Telefono" class="form-control" type="tel" required
+                                           pattern="[0-9]{7,15}" title="Solo nÃºmeros, entre 7 y 15 dÃ­gitos" />
+                                    <span asp-validation-for="Telefono" class="text-danger"></span>
+                                </div>
 
-           <div class="mb-3">
-       <label for="CorreoElectronico" class="form-label">Correo Electrónico *</label>
-             <input asp-for="CorreoElectronico" id="CorreoElectronico" class="form-control" type="email" required />
-       <span asp-validation-for="CorreoElectronico" class="text-danger"></span>
-      <small class="form-text text-muted">
-     <i class="fas fa-info-circle"></i> Recibirás un correo si cambias tu email
-</small>
-    </div>
-  </div>
+                                <div class="mb-3">
+                                    <label for="CorreoElectronico" class="form-label fw-semibold">Correo ElectrÃ³nico *</label>
+                                    <input asp-for="CorreoElectronico" id="CorreoElectronico" class="form-control" type="email" required />
+                                    <span asp-validation-for="CorreoElectronico" class="text-danger"></span>
+                                    <small class="form-text text-muted">
+                                        <i class="fas fa-info-circle"></i> RecibirÃ¡s un correo si cambias tu email
+                                    </small>
+                                </div>
+                            </div>
 
-      <!-- Cambio de Contraseña -->
-   <div class="col-md-6">
-   <h5 class="mb-3 text-primary">
-    <i class="fas fa-lock"></i> Cambiar Contraseña
-         </h5>
+                            <!-- Cambio de ContraseÃ±a -->
+                            <div class="col-md-6">
+                                <h5 class="mb-3 text-primary">
+                                    <i class="fas fa-lock"></i> Cambiar ContraseÃ±a
+                                </h5>
 
-         <div class="alert alert-info">
-     <i class="fas fa-info-circle"></i> 
-       Deja estos campos vacíos si no deseas cambiar tu contraseña
-          </div>
+                                <div class="alert alert-info">
+                                    <i class="fas fa-info-circle"></i>
+                                    Deja estos campos vacÃ­os si no deseas cambiar tu contraseÃ±a
+                                </div>
 
-     <div class="mb-3">
-     <label for="PasswordActual" class="form-label">Contraseña Actual</label>
-   <input type="password" name="PasswordActual" id="PasswordActual" 
-  class="form-control" autocomplete="current-password" />
-        <small class="form-text text-muted">Requerida solo si cambias la contraseña</small>
-     </div>
+                                <div class="mb-3">
+                                    <label for="PasswordActual" class="form-label fw-semibold">ContraseÃ±a Actual</label>
+                                    <input type="password" name="PasswordActual" id="PasswordActual"
+                                           class="form-control" autocomplete="current-password" />
+                                    <small class="form-text text-muted">Requerida solo si cambias la contraseÃ±a</small>
+                                </div>
 
-  <div class="mb-3">
-    <label for="NuevaPassword" class="form-label">Nueva Contraseña</label>
-    <input type="password" name="NuevaPassword" id="NuevaPassword" 
-        class="form-control" minlength="8" autocomplete="new-password" />
-       <small class="form-text text-muted">
-    Mínimo 8 caracteres, incluye mayúsculas, minúsculas, números y símbolos
-       </small>
-</div>
+                                <div class="mb-3">
+                                    <label for="NuevaPassword" class="form-label fw-semibold">Nueva ContraseÃ±a</label>
+                                    <input type="password" name="NuevaPassword" id="NuevaPassword"
+                                           class="form-control" minlength="8" autocomplete="new-password" />
+                                    <small class="form-text text-muted">
+                                        MÃ­nimo 8 caracteres, incluye mayÃºsculas, minÃºsculas, nÃºmeros y sÃ­mbolos
+                                    </small>
+                                </div>
 
-        <div class="mb-3">
-<label for="ConfirmarPassword" class="form-label">Confirmar Nueva Contraseña</label>
-        <input type="password" name="ConfirmarPassword" id="ConfirmarPassword" 
-    class="form-control" minlength="8" autocomplete="new-password" />
-     </div>
+                                <div class="mb-3">
+                                    <label for="ConfirmarPassword" class="form-label fw-semibold">Confirmar Nueva ContraseÃ±a</label>
+                                    <input type="password" name="ConfirmarPassword" id="ConfirmarPassword"
+                                           class="form-control" minlength="8" autocomplete="new-password" />
+                                </div>
 
-          <div class="alert alert-warning mt-3">
-        <i class="fas fa-exclamation-triangle"></i> 
-  <strong>Importante:</strong> Si cambias tu contraseña, recibirás un correo de confirmación.
-  </div>
-    </div>
-  </div>
+                                <div class="alert alert-warning mt-3">
+                                    <i class="fas fa-exclamation-triangle"></i>
+                                    <strong>Importante:</strong> Si cambias tu contraseÃ±a, recibirÃ¡s un correo de confirmaciÃ³n.
+                                </div>
+                            </div>
+                        </div>
 
-    <hr class="my-4" />
+                        <hr class="my-4" />
 
-  <div class="d-flex justify-content-between">
-         <a asp-controller="Home" asp-action="Index" class="btn btn-secondary">
-         <i class="fas fa-arrow-left"></i> Volver
-        </a>
-   <button type="submit" class="btn btn-primary btn-lg">
-     <i class="fas fa-save"></i> Guardar Cambios
-       </button>
-</div>
-    </form>
-       </div>
- </div>
+                        <div class="d-flex justify-content-between">
+                            <a asp-controller="Paciente" asp-action="Dashboard" class="btn btn-secondary">
+                                <i class="fas fa-arrow-left"></i> Volver
+                            </a>
+                            <button type="submit" class="btn btn-primary btn-lg">
+                                <i class="fas fa-save"></i> Guardar Cambios
+                            </button>
+                        </div>
+                    </form>
+                </div>
+            </div>
 
-      <!-- Información de Cuenta -->
-  <div class="card shadow-lg mt-4">
-   <div class="card-header bg-secondary text-white">
- <h5 class="mb-0">
-     <i class="fas fa-info-circle"></i> Información de la Cuenta
-   </h5>
-      </div>
- <div class="card-body">
-              <div class="row">
-           <div class="col-md-4 mb-3">
-      <p class="mb-1 text-muted">Fecha de Nacimiento</p>
-          <p class="fw-bold">@Model.FechaNacimiento.ToString("dd/MM/yyyy")</p>
- </div>
-    <div class="col-md-4 mb-3">
-    <p class="mb-1 text-muted">Sexo</p>
-   <p class="fw-bold">@(Model.Sexo == "M" ? "Masculino" : "Femenino")</p>
-    </div>
-        <div class="col-md-4 mb-3">
-     <p class="mb-1 text-muted">EPS</p>
-          <p class="fw-bold">@Model.Eps</p>
-        </div>
-       <div class="col-md-4 mb-3">
-       <p class="mb-1 text-muted">Tipo de Sangre</p>
-    <p class="fw-bold">@Model.TipoSangre</p>
-      </div>
-        <div class="col-md-4 mb-3">
-              <p class="mb-1 text-muted">Estado de Verificación</p>
-      <p class="fw-bold">
-@if (Model.EstaVerificado)
-  {
-            <span class="badge bg-success">
-  <i class="fas fa-check-circle"></i> Verificado
-      </span>
-               }
-         else
-   {
-      <span class="badge bg-warning">
-     <i class="fas fa-clock"></i> Pendiente
-</span>
-      }
-          </p>
-       </div>
-  <div class="col-md-4 mb-3">
-  <p class="mb-1 text-muted">Fecha de Registro</p>
-        <p class="fw-bold">@Model.FechaRegistro.ToString("dd/MM/yyyy")</p>
-       </div>
-</div>
-  </div>
-    </div>
+            <!-- SECCIÃ“N HISTORIA CLÃNICA -->
+            <div class="card shadow-lg mt-4">
+                <div class="card-header bg-info text-white">
+                    <h5 class="mb-0">
+                        <i class="fas fa-file-medical"></i> Historia ClÃ­nica
+                    </h5>
+                </div>
+                <div class="card-body">
+                    @if (!Model.EstaVerificado)
+                    {
+                        <!-- Bloqueado si cuenta no verificada -->
+                        <div class="alert alert-warning mb-0">
+                            <i class="fas fa-lock me-2"></i>
+                            <strong>Cuenta no verificada.</strong>
+                            Debes verificar tu cuenta para poder subir tu historia clÃ­nica.
+                        </div>
+                    }
+                    else if (Model.TieneHistoriaClinica)
+                    {
+                        <!-- Ya tiene historia cargada -->
+                        <div class="d-flex align-items-center justify-content-between flex-wrap gap-3">
+                            <div>
+                                <div class="d-flex align-items-center gap-2 mb-1">
+                                    <i class="fas fa-file-pdf text-danger fa-2x"></i>
+                                    <div>
+                                        <div class="fw-bold">@Model.HistoriaClinicaNombreArchivo</div>
+                                        <small class="text-muted">
+                                            Cargada el @Model.HistoriaClinicaFechaCarga?.ToString("dd/MM/yyyy 'a las' HH:mm")
+                                        </small>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="d-flex gap-2 flex-wrap">
+                                <!-- Descargar -->
+                                <a asp-action="DescargarHistoriaClinica" class="btn btn-outline-primary btn-sm">
+                                    <i class="fas fa-download me-1"></i> Descargar
+                                </a>
+                                <!-- Reemplazar -->
+                                <label for="archivoReemplazo" class="btn btn-outline-warning btn-sm mb-0" style="cursor: pointer;">
+                                    <i class="fas fa-sync-alt me-1"></i> Reemplazar
+                                </label>
+                                <!-- Eliminar -->
+                                <form asp-action="EliminarHistoriaClinica" method="post" class="d-inline"
+                                      onsubmit="return confirm('Â¿EstÃ¡s seguro de que deseas eliminar tu historia clÃ­nica?')">
+                                    @Html.AntiForgeryToken()
+                                    <button type="submit" class="btn btn-outline-danger btn-sm">
+                                        <i class="fas fa-trash me-1"></i> Eliminar
+                                    </button>
+                                </form>
+                            </div>
+                        </div>
+
+                        <!-- Form oculto para reemplazar -->
+                        <form asp-action="SubirHistoriaClinica" method="post" enctype="multipart/form-data" id="formReemplazo">
+                            @Html.AntiForgeryToken()
+                            <input type="file" id="archivoReemplazo" name="archivo" accept=".pdf" class="d-none"
+                                   onchange="document.getElementById('formReemplazo').submit()" />
+                        </form>
+                    }
+                    else
+                    {
+                        <!-- No tiene historia, mostrar uploader -->
+                        <p class="text-muted mb-3">
+                            <i class="fas fa-info-circle me-1"></i>
+                            Sube tu historia clÃ­nica en formato PDF para que el asistente mÃ©dico pueda darte respuestas mÃ¡s personalizadas.
+                        </p>
+                        <form asp-action="SubirHistoriaClinica" method="post" enctype="multipart/form-data" id="formSubir">
+                            @Html.AntiForgeryToken()
+                            <div class="mb-3">
+                                <label for="archivoHistoria" class="form-label fw-semibold">
+                                    Seleccionar archivo PDF *
+                                </label>
+                                <input type="file" id="archivoHistoria" name="archivo"
+                                       accept=".pdf" class="form-control" required />
+                                <small class="form-text text-muted">
+                                    <i class="fas fa-info-circle"></i> Solo archivos PDF Â· MÃ¡ximo 10 MB
+                                </small>
+                            </div>
+                            <button type="submit" class="btn btn-info text-white">
+                                <i class="fas fa-upload me-2"></i> Subir Historia ClÃ­nica
+                            </button>
+                        </form>
+                    }
+                </div>
+            </div>
+
+            <!-- InformaciÃ³n de Cuenta -->
+            <div class="card shadow-lg mt-4">
+                <div class="card-header bg-secondary text-white">
+                    <h5 class="mb-0">
+                        <i class="fas fa-info-circle"></i> InformaciÃ³n de la Cuenta
+                    </h5>
+                </div>
+                <div class="card-body">
+                    <div class="row">
+                        <div class="col-md-4 mb-3">
+                            <p class="mb-1 text-muted">Fecha de Nacimiento</p>
+                            <p class="fw-bold">@Model.FechaNacimiento.ToString("dd/MM/yyyy")</p>
+                        </div>
+                        <div class="col-md-4 mb-3">
+                            <p class="mb-1 text-muted">Sexo</p>
+                            <p class="fw-bold">@(Model.Sexo == "M" ? "Masculino" : "Femenino")</p>
+                        </div>
+                        <div class="col-md-4 mb-3">
+                            <p class="mb-1 text-muted">EPS</p>
+                            <p class="fw-bold">@Model.Eps</p>
+                        </div>
+                        <div class="col-md-4 mb-3">
+                            <p class="mb-1 text-muted">Tipo de Sangre</p>
+                            <p class="fw-bold">@Model.TipoSangre</p>
+                        </div>
+                        <div class="col-md-4 mb-3">
+                            <p class="mb-1 text-muted">Estado de VerificaciÃ³n</p>
+                            <p class="fw-bold">
+                                @if (Model.EstaVerificado)
+                                {
+                                    <span class="badge bg-success">
+                                        <i class="fas fa-check-circle"></i> Verificado
+                                    </span>
+                                }
+                                else
+                                {
+                                    <span class="badge bg-warning">
+                                        <i class="fas fa-clock"></i> Pendiente
+                                    </span>
+                                }
+                            </p>
+                        </div>
+                        <div class="col-md-4 mb-3">
+                            <p class="mb-1 text-muted">Historia ClÃ­nica</p>
+                            <p class="fw-bold">
+                                @if (Model.TieneHistoriaClinica)
+                                {
+                                    <span class="badge bg-success">
+                                        <i class="fas fa-check-circle"></i> Cargada
+                                    </span>
+                                }
+                                else
+                                {
+                                    <span class="badge bg-secondary">
+                                        <i class="fas fa-times-circle"></i> No cargada
+                                    </span>
+                                }
+                            </p>
+                        </div>
+                        <div class="col-md-4 mb-3">
+                            <p class="mb-1 text-muted">Fecha de Registro</p>
+                            <p class="fw-bold">@Model.FechaRegistro.ToString("dd/MM/yyyy")</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
         </div>
     </div>
 </div>
 
 @section Scripts {
-    @{await Html.RenderPartialAsync("_ValidationScriptsPartial");}
- <script>
-        // Validación de confirmación de contraseña
-    document.getElementById('perfilForm').addEventListener('submit', function(e) {
- const nuevaPassword = document.getElementById('NuevaPassword').value;
-       const confirmarPassword = document.getElementById('ConfirmarPassword').value;
-  const passwordActual = document.getElementById('PasswordActual').value;
-
-            // Si se intenta cambiar contraseña
-     if (nuevaPassword || confirmarPassword) {
-        if (!passwordActual) {
-           e.preventDefault();
-  alert('Debes ingresar tu contraseña actual para cambiarla');
-   return false;
+    @{
+        await Html.RenderPartialAsync("_ValidationScriptsPartial");
     }
+    <script>
+        document.getElementById('perfilForm').addEventListener('submit', function (e) {
+            const nuevaPassword = document.getElementById('NuevaPassword').value;
+            const confirmarPassword = document.getElementById('ConfirmarPassword').value;
+            const passwordActual = document.getElementById('PasswordActual').value;
 
-      if (nuevaPassword !== confirmarPassword) {
-     e.preventDefault();
-   alert('Las contraseñas nuevas no coinciden');
-      return false;
-        }
-
-     if (nuevaPassword.length < 8) {
-     e.preventDefault();
-         alert('La nueva contraseña debe tener al menos 8 caracteres');
-         return false;
+            if (nuevaPassword || confirmarPassword) {
+                if (!passwordActual) {
+                    e.preventDefault();
+                    alert('Debes ingresar tu contraseÃ±a actual para cambiarla');
+                    return false;
                 }
-   }
-    });
+                if (nuevaPassword !== confirmarPassword) {
+                    e.preventDefault();
+                    alert('Las contraseÃ±as nuevas no coinciden');
+                    return false;
+                }
+                if (nuevaPassword.length < 8) {
+                    e.preventDefault();
+                    alert('La nueva contraseÃ±a debe tener al menos 8 caracteres');
+                    return false;
+                }
+            }
+        });
     </script>
 }

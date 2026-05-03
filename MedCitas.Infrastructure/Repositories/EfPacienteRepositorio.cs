@@ -136,5 +136,23 @@ namespace MedCitas.Infrastructure.Repositories
             return true;
         }
 
+        // ✅ Agregar al final de la clase, antes del cierre
+
+        /// <summary>
+        /// Actualiza únicamente los campos relacionados a la historia clínica
+        /// </summary>
+        public async Task ActualizarHistoriaClinicaAsync(Paciente paciente)
+        {
+            ArgumentNullException.ThrowIfNull(paciente);
+
+            // Actualizar solo los campos de historia clínica (más eficiente que actualizar todo)
+            _db.Pacientes.Attach(paciente);
+            _db.Entry(paciente).Property(p => p.HistoriaClinica).IsModified = true;
+            _db.Entry(paciente).Property(p => p.HistoriaClinicaNombreArchivo).IsModified = true;
+            _db.Entry(paciente).Property(p => p.HistoriaClinicaFechaCarga).IsModified = true;
+
+            await _db.SaveChangesAsync();
+        }
+
     }
 }

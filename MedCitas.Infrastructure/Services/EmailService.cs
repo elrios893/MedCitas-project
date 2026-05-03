@@ -305,38 +305,38 @@ TimeSpan horaCita)
         private static string GenerarHtmlCambiosSensibles(string nombreCompleto)
         {
             return $@"
-<!DOCTYPE html>
-<html>
-<head>
-    <meta charset='UTF-8'>
-    <style>
-        body {{ font-family: Arial, sans-serif; line-height: 1.6; color: #333; }}
-        .container {{ max-width: 600px; margin: 0 auto; padding: 20px; }}
-        .header {{ background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); color: white; padding: 30px; text-align: center; border-radius: 10px 10px 0 0; }}
-        .content {{ background: #f9f9f9; padding: 30px; border-radius: 0 0 10px 10px; }}
-        .alert {{ background: #fff3cd; border-left: 4px solid #ffc107; padding: 15px; margin: 20px 0; }}
-        .footer {{ text-align: center; margin-top: 20px; font-size: 12px; color: #666; }}
-    </style>
-</head>
-<body>
-    <div class='container'>
-  <div class='header'><h1>🔒 Cambios en tu Cuenta</h1></div>
- <div class='content'>
-     <h2>Hola, {nombreCompleto}</h2>
-            <p>Te informamos que se han realizado cambios en tu cuenta de MedCitas.</p>
-            <div class='alert'>
-    <strong>⚠️ Atención:</strong> Si no fuiste tú quien realizó estos cambios, por favor contacta inmediatamente con soporte.
-          </div>
-            <p>Cambios que generan esta notificación:</p>
-          <ul>
-  <li>Cambio de correo electrónico</li>
-     <li>Cambio de contraseña</li>
-            </ul>
-        </div>
-        <div class='footer'><p>© 2025 MedCitas</p></div>
-    </div>
-</body>
-</html>";
+            <!DOCTYPE html>
+            <html>
+            <head>
+                <meta charset='UTF-8'>
+                <style>
+                    body {{ font-family: Arial, sans-serif; line-height: 1.6; color: #333; }}
+                    .container {{ max-width: 600px; margin: 0 auto; padding: 20px; }}
+                    .header {{ background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); color: white; padding: 30px; text-align: center; border-radius: 10px 10px 0 0; }}
+                    .content {{ background: #f9f9f9; padding: 30px; border-radius: 0 0 10px 10px; }}
+                    .alert {{ background: #fff3cd; border-left: 4px solid #ffc107; padding: 15px; margin: 20px 0; }}
+                    .footer {{ text-align: center; margin-top: 20px; font-size: 12px; color: #666; }}
+                </style>
+            </head>
+            <body>
+                <div class='container'>
+              <div class='header'><h1>🔒 Cambios en tu Cuenta</h1></div>
+             <div class='content'>
+                 <h2>Hola, {nombreCompleto}</h2>
+                        <p>Te informamos que se han realizado cambios en tu cuenta de MedCitas.</p>
+                        <div class='alert'>
+                <strong>⚠️ Atención:</strong> Si no fuiste tú quien realizó estos cambios, por favor contacta inmediatamente con soporte.
+                      </div>
+                        <p>Cambios que generan esta notificación:</p>
+                      <ul>
+              <li>Cambio de correo electrónico</li>
+                 <li>Cambio de contraseña</li>
+                        </ul>
+                    </div>
+                    <div class='footer'><p>© 2025 MedCitas</p></div>
+                </div>
+            </body>
+            </html>";
         }
 
         private static string GenerarHtmlConfirmacionCita(

@@ -1,4 +1,4 @@
-using MedCitas.Core.Configuration;
+ï»¿using MedCitas.Core.Configuration;
 using MedCitas.Core.Interfaces;
 using MedCitas.Core.Services;
 using MedCitas.Infrastructure.Repositories;
@@ -9,7 +9,7 @@ using Microsoft.EntityFrameworkCore;
 var builder = WebApplication.CreateBuilder(args);
 
 // ---------------------------------------------------------
-// CONFIGURACIÓN DE SERVICIOS
+// CONFIGURACIÃ“N DE SERVICIOS
 // ---------------------------------------------------------
 builder.Services.AddControllersWithViews();
 builder.Services.AddSession(options =>
@@ -20,26 +20,32 @@ builder.Services.AddSession(options =>
     options.Cookie.SecurePolicy = CookieSecurePolicy.Always; // ? SEGURIDAD: Solo HTTPS
 });
 
-// ? CONFIGURACIÓN DE EMAIL CON OPTIONS PATTERN
+builder.Services.AddHttpClient<RagService>(client =>
+{
+    client.BaseAddress = new Uri(builder.Configuration["RagApi:BaseUrl"]);
+    client.Timeout = TimeSpan.FromSeconds(180); // phi3 puede tardar
+});
+
+// ? CONFIGURACIÃ“N DE EMAIL CON OPTIONS PATTERN
 builder.Services.Configure<EmailConfiguration>(builder.Configuration.GetSection("Email"));
 
-// Leer la contraseña desde User Secrets
+// Leer la contraseÃ±a desde User Secrets
 var dbPassword = builder.Configuration["ConnectionStrings:DbPassword"];
 var baseConnectionString = builder.Configuration.GetConnectionString("DefaultConnection");
 
-// Construir la cadena de conexión completa
+// Construir la cadena de conexiÃ³n completa
 var connectionString = string.IsNullOrEmpty(dbPassword)
     ? baseConnectionString
     : $"{baseConnectionString};Password={dbPassword}";
 
 AppContext.SetSwitch("Npgsql.EnableLegacyTimestampBehavior", false);
 
-// Configurar DbContext con la cadena de conexión completa
+// Configurar DbContext con la cadena de conexiÃ³n completa
 builder.Services.AddDbContext<MedCitasDbContext>(options =>
     options.UseNpgsql(connectionString));
 
 // ---------------------------------------------------------
-// INYECCIÓN DE DEPENDENCIAS
+// INYECCIÃ“N DE DEPENDENCIAS
 // ---------------------------------------------------------
 builder.Services.AddScoped<IPacienteRepository, EfPacienteRepositorio>();
 builder.Services.AddScoped<IAppointmentRepository, EfAppointmentRepository>();
@@ -59,12 +65,12 @@ builder.Services.AddAntiforgery(options =>
 });
 
 // ---------------------------------------------------------
-// CONSTRUCCIÓN DE LA APP
+// CONSTRUCCIÃ“N DE LA APP
 // ---------------------------------------------------------
 var app = builder.Build();
 
 // ---------------------------------------------------------
-// CONFIGURACIÓN DEL PIPELINE HTTP
+// CONFIGURACIÃ“N DEL PIPELINE HTTP
 // ---------------------------------------------------------
 if (!app.Environment.IsDevelopment())
 {

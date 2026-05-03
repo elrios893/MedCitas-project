@@ -54,6 +54,15 @@ namespace MedCitas.Core.Entities
         public string? TokenRecuperacion { get; set; }
         public DateTime? TokenRecuperacionExpiracion { get; set; }
 
+        // ✅ NUEVO: Historia clínica almacenada como bytes (PDF)
+        // Historia Clinica puede ser null si no se ha cargado ningún archivo (no es obligatorio), por eso el tipo byte[]? (nullable)
+        public byte[]? HistoriaClinica { get; set; }
+        public string? HistoriaClinicaNombreArchivo { get; set; }
+        public DateTime? HistoriaClinicaFechaCarga { get; set; }
+
+        public bool TieneHistoriaClinica => HistoriaClinica != null && HistoriaClinica.Length > 0;
+
+
         public string ToStringPaciente()
         {
             

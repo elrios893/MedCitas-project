@@ -427,6 +427,60 @@ namespace MedCitas.Core.Services
         {
             return await _repo.ObtenerPorIdAsync(id);
         }
+
+        // -----------------------------------------
+        // HISTORIA CLÍNICA
+        // -----------------------------------------
+
+        /// <summary>
+        /// Guarda o reemplaza la historia clínica del paciente.
+        /// Solo permitido si la cuenta está verificada.
+        /// </summary>
+        public async Task GuardarHistoriaClinicaAsync(Guid pacienteId, byte[] archivoPdf, string nombreArchivo)
+        {
+            var paciente = await _repo.ObtenerPorIdAsync(pacienteId)
+                ?? throw new InvalidOperationException("Paciente no encontrado.");
+
+            if (!paciente.EstaVerificado)
+                throw new InvalidOperationException("Tu cuenta debe estar verificada para subir la historia clínica.");
+
+            paciente.HistoriaClinica = archivoPdf;
+            paciente.HistoriaClinicaNombreArchivo = nombreArchivo;
+            paciente.HistoriaClinicaFechaCarga = DateTime.UtcNow;
+
+            await _repo.ActualizarHistoriaClinicaAsync(paciente);
+        }
+
+        /// <summary>
+        /// Elimina la historia clínica del paciente.
+        /// </summary>
+        public async Task EliminarHistoriaClinicaAsync(Guid pacienteId)
+        {
+            var paciente = await _repo.ObtenerPorIdAsync(pacienteId)
+                ?? throw new InvalidOperationException("Paciente no encontrado.");
+
+            if (!paciente.EstaVerificado)
+                throw new InvalidOperationException("Tu cuenta debe estar verificada.");
+
+            paciente.HistoriaClinica = null;
+            paciente.HistoriaClinicaNombreArchivo = null;
+            paciente.HistoriaClinicaFechaCarga = null;
+
+            await _repo.ActualizarHistoriaClinicaAsync(paciente);
+        }
+
+        /// <summary>
+        /// Obtiene los bytes del PDF de la historia clínica.
+        /// </summary>
+        public async Task<(byte[] Archivo, string NombreArchivo)?> ObtenerHistoriaClinicaAsync(Guid pacienteId)
+        {
+            var paciente = await _repo.ObtenerPorIdAsync(pacienteId);
+
+            if (paciente == null || !paciente.TieneHistoriaClinica)
+                return null;
+
+            return (paciente.HistoriaClinica!, paciente.HistoriaClinicaNombreArchivo!);
+        }
     }
 }
 

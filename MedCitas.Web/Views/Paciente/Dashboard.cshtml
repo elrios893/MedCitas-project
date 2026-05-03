@@ -9,7 +9,7 @@
             <div class="welcome-card">
                 <div class="welcome-content">
                     <h1 class="display-5 fw-bold mb-2">
-                        ¡Bienvenido, @ViewBag.PacienteNombre! ??
+                        ¡Bienvenido, @ViewBag.PacienteNombre!
                     </h1>
                     <p class="lead mb-0"> @* text-muted *@
                         Gestiona tus citas médicas de forma rápida y sencilla
@@ -106,6 +106,29 @@
                 </div>
             </div>
         </div>
+
+        <!-- Hablar con chatbot -->
+        <div class="col-lg-4 col-md-6 mb-4">
+            <div class="action-card card h-100 border-0 shadow-sm hover-lift">
+                <div class="card-body text-center p-4">
+                    <div class="action-icon mb-3">
+                        <div class="icon-circle bg-info-soft">
+                            <i class="fas fa-user-edit fa-3x text-info"></i>
+                        </div>
+                    </div>
+                    <h5 class="card-title fw-bold mb-2">Chatbot especializado</h5>
+                    <p class="card-text text-muted mb-4">
+                        ¡Habla con nuestro asistente virtual para resolver tus dudas al instante! Recuerda que para maximizar su uso, debes subir tu historial médico.
+                    </p>
+                    <a asp-controller="Paciente" asp-action="Chatbot" class="btn btn-info btn-lg w-100">
+                        <i class="fas fa-edit me-2"></i>
+                        ¡Chatea ahora!
+                    </a>
+                </div>
+            </div>
+        </div>
+
+
     </div>
 
     <!-- Información Útil -->

@@ -24,6 +24,10 @@ namespace MedCitas.Core.Interfaces
         Task ActualizarPasswordAsync(Paciente paciente);
 
         Task<bool> EliminarAsync(Guid id);
+
+        // Nuevo método para actualizar la historia clínica del paciente desde un interface
+        Task ActualizarHistoriaClinicaAsync(Paciente paciente);
+
     }
 }
 
