@@ -1,0 +1,530 @@
+﻿@{
+    ViewData["Title"] = "Asistente Médico";
+    var pacienteNombre = ViewBag.PacienteNombre as string ?? "Paciente";
+    var tieneHistoria = (bool)(ViewBag.TieneHistoria ?? false);
+    var apiDisponible = (bool)(ViewBag.ApiDisponible ?? false);
+}
+
+<div class="container-fluid px-0" style="height: calc(100vh - 220px); min-height: 600px;">
+    <div class="row g-0 h-100">
+
+        <!-- ===================== PANEL LATERAL ===================== -->
+        <div class="col-lg-3 border-end bg-light d-flex flex-column" style="height:100%;">
+            <div class="p-3 border-bottom bg-white">
+                <div class="d-flex align-items-center gap-2 mb-2">
+                    <a asp-controller="Paciente" asp-action="Dashboard" class="btn btn-sm btn-outline-secondary">
+                        <i class="bi bi-arrow-left"></i>
+                    </a>
+                    <h6 class="mb-0 fw-bold">Asistente Médico</h6>
+                </div>
+                <div class="d-flex align-items-center gap-2">
+                    <span id="statusDot" class="rounded-circle d-inline-block"
+                          style="width:10px;height:10px;background:@(apiDisponible ? "#28a745" : "#dc3545")"></span>
+                    <small class="text-muted" id="statusText">
+                        @(apiDisponible ? "Asistente en línea" : "Asistente fuera de línea")
+                    </small>
+                </div>
+            </div>
+
+            <!-- Historial médico -->
+            <div class="p-3 border-bottom">
+                <small class="text-muted text-uppercase fw-bold d-block mb-2">
+                    <i class="bi bi-file-medical me-1"></i> Historia Clínica
+                </small>
+                @if (tieneHistoria)
+                {
+                    <div class="d-flex align-items-center gap-2 p-2 bg-success bg-opacity-10 rounded border border-success border-opacity-25">
+                        <i class="bi bi-file-earmark-pdf text-success fs-5"></i>
+                        <div>
+                            <div class="small fw-bold text-success">Cargada</div>
+                            <div style="font-size:0.75rem;" class="text-muted">El asistente tiene contexto de tu historial</div>
+                        </div>
+                    </div>
+                }
+                else
+                {
+                    <div class="d-flex align-items-center gap-2 p-2 bg-warning bg-opacity-10 rounded border border-warning border-opacity-25">
+                        <i class="bi bi-exclamation-triangle text-warning fs-5"></i>
+                        <div>
+                            <div class="small fw-bold text-warning">Sin historial</div>
+                            <div style="font-size:0.75rem;" class="text-muted">
+                                <a asp-controller="Paciente" asp-action="Perfil" class="text-decoration-none">Súbelo en tu perfil</a>
+                            </div>
+                        </div>
+                    </div>
+                }
+            </div>
+
+            <!-- Preguntas sugeridas -->
+            <div class="p-3 flex-grow-1 overflow-auto">
+                <small class="text-muted text-uppercase fw-bold d-block mb-2">
+                    <i class="bi bi-lightbulb me-1"></i> Preguntas frecuentes
+                </small>
+                <div class="d-flex flex-column gap-1">
+                    @{
+                        var sugerencias = new[]
+                        {
+                            "¿Cuáles son los síntomas de la diabetes tipo 2?",
+                            "¿Qué debo hacer antes de una cirugía?",
+                            "¿Efectos secundarios del ibuprofeno?",
+                            "¿Cómo controlar la presión arterial alta?",
+                            "¿Qué vitaminas debo tomar?",
+                            "¿Cuándo debo ir a urgencias?",
+                        };
+                    }
+                    @foreach (var s in sugerencias)
+                    {
+                        <button class="btn btn-light btn-sm text-start border py-2 px-3"
+                                style="font-size:0.82rem; white-space:normal; line-height:1.3;"
+                                onclick="usarSugerencia(this)">
+                            <i class="bi bi-chevron-right text-primary me-1" style="font-size:0.7rem;"></i>@s
+                        </button>
+                    }
+                </div>
+            </div>
+
+            <div class="p-3 border-top">
+                <button class="btn btn-outline-secondary btn-sm w-100" onclick="limpiarChat()">
+                    <i class="bi bi-trash me-1"></i> Limpiar conversación
+                </button>
+            </div>
+        </div>
+
+        <!-- ===================== PANEL CHAT ===================== -->
+        <div class="col-lg-9 d-flex flex-column" style="height:100%;">
+
+            <!-- Header -->
+            <div class="p-3 border-bottom bg-white d-flex align-items-center gap-3">
+                <div class="rounded-circle d-flex align-items-center justify-content-center text-white"
+                     style="width:42px;height:42px;min-width:42px;background:linear-gradient(135deg,#667eea,#764ba2);">
+                    <i class="bi bi-robot fs-5"></i>
+                </div>
+                <div>
+                    <div class="fw-bold">Dr. MedBot</div>
+                    <small class="text-muted">Asistente médico con IA · Solo orientación informativa</small>
+                </div>
+            </div>
+
+            <!-- Área de mensajes -->
+            <div id="chatMessages" class="flex-grow-1 overflow-auto p-3 p-lg-4" style="background:#f8f9fa;">
+
+                <!-- Mensaje bienvenida -->
+                <div class="d-flex gap-2 mb-3" id="msgBienvenida">
+                    <div class="rounded-circle d-flex align-items-center justify-content-center text-white flex-shrink-0"
+                         style="width:34px;height:34px;background:linear-gradient(135deg,#667eea,#764ba2);">
+                        <i class="bi bi-robot" style="font-size:0.85rem;"></i>
+                    </div>
+                    <div>
+                        <div class="p-3 rounded-3 bg-white shadow-sm" style="max-width:520px;">
+                            <p class="mb-1">¡Hola, <strong>@pacienteNombre</strong>! 👋 Soy tu asistente médico virtual.</p>
+                            <p class="mb-1 text-muted" style="font-size:0.9rem;">Puedo ayudarte con:</p>
+                            <ul class="mb-2 text-muted" style="font-size:0.9rem;">
+                                <li>Información sobre medicamentos y síntomas</li>
+                                <li>Orientación médica general</li>
+                                @if (tieneHistoria)
+                                {
+                                    <li>Consultas basadas en <strong>tu historial médico</strong> ✅</li>
+                                }
+                                else
+                                {
+                                    <li>Consultas personalizadas (requiere <a asp-controller="Paciente" asp-action="Perfil">subir historial</a>)</li>
+                                }
+                            </ul>
+                            <div class="p-2 rounded" style="background:#fff8e1;font-size:0.8rem;">
+                                ⚠️ <em>Este asistente es solo informativo. Siempre consulta con tu médico.</em>
+                            </div>
+                        </div>
+                        <small class="text-muted ms-1" style="font-size:0.72rem;">Ahora</small>
+                    </div>
+                </div>
+
+            </div>
+
+            <!-- Indicador de escritura -->
+            <div id="typingRow" class="d-none px-3 px-lg-4 pb-2" style="background:#f8f9fa;">
+                <div class="d-flex gap-2 align-items-center">
+                    <div class="rounded-circle d-flex align-items-center justify-content-center text-white flex-shrink-0"
+                         style="width:34px;height:34px;background:linear-gradient(135deg,#667eea,#764ba2);">
+                        <i class="bi bi-robot" style="font-size:0.85rem;"></i>
+                    </div>
+                    <div class="p-2 px-3 bg-white rounded-3 shadow-sm">
+                        <div class="typing-dots">
+                            <span></span><span></span><span></span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Input -->
+            <div class="p-3 border-top bg-white">
+                @if (!apiDisponible)
+                {
+                    <div class="alert alert-warning py-2 mb-2" style="font-size:0.85rem;">
+                        <i class="bi bi-exclamation-triangle me-1"></i>
+                        El asistente no está disponible en este momento.
+                    </div>
+                }
+                <div class="input-group">
+                    <textarea id="inputPregunta"
+                              class="form-control"
+                              placeholder="Escribe tu consulta médica..."
+                              rows="1"
+                              style="resize:none;border-radius:12px 0 0 12px;max-height:120px;"
+                              @(apiDisponible ? "" : "disabled")
+                              onkeydown="handleKeyDown(event)"></textarea>
+                    <button id="btnEnviar"
+                            class="btn btn-primary px-4"
+                            style="border-radius:0 12px 12px 0;"
+                            onclick="enviarMensaje()"
+                            @(apiDisponible ? "" : "disabled")>
+                        <i class="bi bi-send-fill"></i>
+                    </button>
+                </div>
+                <div class="d-flex justify-content-between mt-1">
+                    <small class="text-muted">
+                        <kbd>Enter</kbd> enviar · <kbd>Shift+Enter</kbd> nueva línea
+                    </small>
+                    <small id="contadorChars" class="text-muted"></small>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+@section Styles {
+    <style>
+        /* Cursor parpadeante mientras llega el stream */
+        .streaming-cursor::after {
+            content: '▋';
+            display: inline-block;
+            color: #667eea;
+            animation: cursorBlink 0.7s step-end infinite;
+            margin-left: 1px;
+        }
+        @@keyframes cursorBlink {
+            0%, 100% { opacity: 1; }
+            50%       { opacity: 0; }
+        }
+
+        /* Puntos animados de escritura (mientras se conecta) */
+        .typing-dots span {
+            display: inline-block;
+            width: 7px; height: 7px;
+            background: #adb5bd;
+            border-radius: 50%;
+            margin: 0 2px;
+            animation: typingBounce 1.2s infinite;
+        }
+        .typing-dots span:nth-child(2) { animation-delay: .2s; }
+        .typing-dots span:nth-child(3) { animation-delay: .4s; }
+        @@keyframes typingBounce {
+            0%,60%,100% { transform: translateY(0); }
+            30%          { transform: translateY(-5px); }
+        }
+
+        /* Burbujas */
+        .burbuja-bot {
+            background: white;
+            border-bottom-left-radius: 4px !important;
+            box-shadow: 0 1px 4px rgba(0,0,0,.07);
+            max-width: 70%;
+            white-space: pre-wrap;    /* respeta saltos de línea */
+            word-break: break-word;
+        }
+        .burbuja-user {
+            background: linear-gradient(135deg, #667eea, #764ba2);
+            color: white;
+            border-bottom-right-radius: 4px !important;
+            max-width: 70%;
+            word-break: break-word;
+        }
+
+        #chatMessages::-webkit-scrollbar { width: 5px; }
+        #chatMessages::-webkit-scrollbar-thumb { background: #dee2e6; border-radius: 3px; }
+        .btn-light:hover { background: #e8f0fe !important; border-color: #667eea !important; }
+
+        @@media (max-width: 991px) {
+            .burbuja-bot, .burbuja-user { max-width: 88%; }
+        }
+    </style>
+}
+
+@section Scripts {
+    <script>
+        // ============================================================
+        // ESTADO
+        // ============================================================
+        let enviando = false;
+        let currentReader = null;  // para poder cancelar el stream
+
+        // ============================================================
+        // ENVIAR MENSAJE — usa fetch + ReadableStream (SSE manual)
+        // ============================================================
+        async function enviarMensaje() {
+            const input = document.getElementById('inputPregunta');
+            const pregunta = input.value.trim();
+            if (!pregunta || enviando) return;
+
+            // Mostrar mensaje del usuario
+            agregarMensajeUsuario(pregunta);
+            input.value = '';
+            input.style.height = 'auto';
+
+            setEnviando(true);
+
+            // Crear burbuja del bot vacía con cursor parpadeante
+            const { contenedor, textNode } = crearBurbujaBotStreaming();
+
+            try {
+                const url = '/Chatbot/ConsultarStream?pregunta=' + encodeURIComponent(pregunta);
+
+                const response = await fetch(url, {
+                    method: 'GET',
+                    headers: { 'Accept': 'text/event-stream' }
+                });
+
+                if (!response.ok) {
+                    console.error('HTTP error:', response.status, response.statusText);
+                    throw new Error(`HTTP ${response.status}`);
+                }
+
+                if (!response.body) {
+                    throw new Error('ReadableStream no soportado en este navegador');
+                }
+
+                // ✅ Leer el ReadableStream chunk a chunk
+                const reader = response.body.getReader();
+                currentReader = reader;
+                const decoder = new TextDecoder('utf-8');
+                let buffer = '';
+
+                while (true) {
+                    const { done, value } = await reader.read();
+                    if (done) break;
+
+                    buffer += decoder.decode(value, { stream: true });
+
+                    // Procesar líneas completas del buffer
+                    const lines = buffer.split('\n');
+                    // La última puede estar incompleta, dejarla en el buffer
+                    buffer = lines.pop();
+
+                    for (const line of lines) {
+                        procesarLineaSSE(line.trim(), textNode, contenedor);
+                    }
+                }
+
+                // Procesar lo que quede en el buffer
+                if (buffer.trim()) {
+                    procesarLineaSSE(buffer.trim(), textNode, contenedor);
+                }
+
+            } catch (err) {
+                if (err.name === 'AbortError') return; // cancelado por el usuario
+
+                console.error('Error en stream:', err);
+                // Reemplazar burbuja vacía por mensaje de error
+                contenedor.remove();
+                agregarMensajeError('Error de conexión. Verifica tu internet e intenta nuevamente.');
+            } finally {
+                // Quitar cursor parpadeante al terminar
+                quitarCursorStreaming(contenedor);
+                currentReader = null;
+                setEnviando(false);
+                scrollAbajo();
+            }
+        }
+
+        // ============================================================
+        // PROCESAR LÍNEA SSE
+        // ============================================================
+        function procesarLineaSSE(line, textNode, contenedor) {
+            if (!line.startsWith('data: ')) return;
+
+            const data = line.slice('data: '.length).trim();
+
+            if (data === '[DONE]') {
+                quitarCursorStreaming(contenedor);
+                return;
+            }
+
+            try {
+                // Puede ser un token JSON string: "texto"
+                // o un objeto de error: {"error": "..."}
+                const parsed = JSON.parse(data);
+
+                if (typeof parsed === 'string') {
+                    // ✅ Token de texto: agregar al nodo de texto directamente
+                    textNode.textContent += parsed;
+                    scrollAbajo();
+                } else if (parsed.error) {
+                    // Error enviado desde el servidor
+                    contenedor.remove();
+                    agregarMensajeError(parsed.error);
+                }
+            } catch {
+                // Si no es JSON válido, agregar como texto plano
+                textNode.textContent += data;
+                scrollAbajo();
+            }
+        }
+
+        // ============================================================
+        // CREAR BURBUJA BOT CON CURSOR STREAMING
+        // ============================================================
+        function crearBurbujaBotStreaming() {
+            const hora = horaActual();
+
+            // Wrapper del mensaje
+            const row = document.createElement('div');
+            row.className = 'd-flex gap-2 mb-3';
+
+            // Avatar
+            const avatar = document.createElement('div');
+            avatar.className = 'rounded-circle d-flex align-items-center justify-content-center text-white flex-shrink-0';
+            avatar.style.cssText = 'width:34px;height:34px;background:linear-gradient(135deg,#667eea,#764ba2);';
+            avatar.innerHTML = '<i class="bi bi-robot" style="font-size:0.85rem;"></i>';
+
+            // Columna derecha
+            const col = document.createElement('div');
+
+            // Burbuja con cursor — el texto se agrega en textNode
+            const burbuja = document.createElement('div');
+            burbuja.className = 'p-3 rounded-3 burbuja-bot streaming-cursor';
+
+            const textNode = document.createTextNode('');
+            burbuja.appendChild(textNode);
+
+            // Hora
+            const horaEl = document.createElement('small');
+            horaEl.className = 'text-muted ms-1';
+            horaEl.style.fontSize = '0.72rem';
+            horaEl.textContent = hora;
+
+            col.appendChild(burbuja);
+            col.appendChild(horaEl);
+            row.appendChild(avatar);
+            row.appendChild(col);
+
+            document.getElementById('chatMessages').appendChild(row);
+            scrollAbajo();
+
+            return { contenedor: burbuja, textNode };
+        }
+
+        function quitarCursorStreaming(burbuja) {
+            burbuja.classList.remove('streaming-cursor');
+        }
+
+        // ============================================================
+        // BURBUJA USUARIO
+        // ============================================================
+        function agregarMensajeUsuario(texto) {
+            const hora = horaActual();
+            const html = `
+                <div class="d-flex gap-2 mb-3 flex-row-reverse">
+                    <div class="rounded-circle d-flex align-items-center justify-content-center text-white flex-shrink-0"
+                         style="width:34px;height:34px;background:linear-gradient(135deg,#28a745,#20c997);">
+                        <i class="bi bi-person-fill" style="font-size:0.85rem;"></i>
+                    </div>
+                    <div class="text-end">
+                        <div class="p-3 rounded-3 burbuja-user d-inline-block text-start">${escapar(texto)}</div>
+                        <div><small class="text-muted me-1" style="font-size:.72rem;">${hora}</small></div>
+                    </div>
+                </div>`;
+            appendChat(html);
+        }
+
+        // ============================================================
+        // MENSAJE DE ERROR
+        // ============================================================
+        function agregarMensajeError(mensaje) {
+            const html = `
+                <div class="d-flex gap-2 mb-3">
+                    <div class="rounded-circle d-flex align-items-center justify-content-center text-white flex-shrink-0"
+                         style="width:34px;height:34px;background:#dc3545;">
+                        <i class="bi bi-exclamation-triangle" style="font-size:0.85rem;"></i>
+                    </div>
+                    <div class="p-3 rounded-3 burbuja-bot border border-danger border-opacity-25">
+                        <span class="text-danger">${escapar(mensaje)}</span>
+                    </div>
+                </div>`;
+            appendChat(html);
+        }
+
+        // ============================================================
+        // LIMPIAR CHAT
+        // ============================================================
+        function limpiarChat() {
+            // Si hay un stream activo, cancelarlo
+            if (currentReader) {
+                currentReader.cancel();
+                currentReader = null;
+            }
+            const area = document.getElementById('chatMessages');
+            const bienvenida = document.getElementById('msgBienvenida');
+            area.innerHTML = '';
+            area.appendChild(bienvenida);
+            setEnviando(false);
+        }
+
+        // ============================================================
+        // SUGERENCIAS
+        // ============================================================
+        function usarSugerencia(btn) {
+            const input = document.getElementById('inputPregunta');
+            input.value = btn.textContent.trim();
+            input.focus();
+            ajustarAlturaTextarea(input);
+        }
+
+        // ============================================================
+        // HELPERS
+        // ============================================================
+        function handleKeyDown(e) {
+            if (e.key === 'Enter' && !e.shiftKey) {
+                e.preventDefault();
+                enviarMensaje();
+            }
+        }
+
+        function setEnviando(val) {
+            enviando = val;
+            document.getElementById('btnEnviar').disabled = val;
+            document.getElementById('inputPregunta').disabled = val;
+        }
+
+        function appendChat(html) {
+            document.getElementById('chatMessages').insertAdjacentHTML('beforeend', html);
+            scrollAbajo();
+        }
+
+        function scrollAbajo() {
+            const area = document.getElementById('chatMessages');
+            area.scrollTop = area.scrollHeight;
+        }
+
+        function horaActual() {
+            return new Date().toLocaleTimeString('es-ES', { hour: '2-digit', minute: '2-digit' });
+        }
+
+        function escapar(str) {
+            const d = document.createElement('div');
+            d.appendChild(document.createTextNode(str));
+            return d.innerHTML;
+        }
+
+        function ajustarAlturaTextarea(el) {
+            el.style.height = 'auto';
+            el.style.height = Math.min(el.scrollHeight, 120) + 'px';
+        }
+
+        // Auto-resize textarea
+        document.getElementById('inputPregunta')?.addEventListener('input', function () {
+            ajustarAlturaTextarea(this);
+            const len = this.value.length;
+            const el = document.getElementById('contadorChars');
+            if (el) el.textContent = len > 0 ? `${len} caracteres` : '';
+        });
+    </script>
+}

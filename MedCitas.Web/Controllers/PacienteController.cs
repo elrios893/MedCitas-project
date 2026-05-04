@@ -1,5 +1,6 @@
 ﻿using MedCitas.Core.Entities;
 using MedCitas.Core.Services;
+using MedCitas.Infrastructure.Services;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Logging;
@@ -16,6 +17,7 @@ namespace MedCitas.Web.Controllers
     {
         private readonly PacienteService _pacienteService;
         private readonly ILogger<PacienteController> _logger;
+        private readonly RagService _ragService;
 
         // Constantes para nombres de acciones
         private const string LoginAction = "Login";
@@ -23,11 +25,14 @@ namespace MedCitas.Web.Controllers
         private const string MensajeExitoKey = "MensajeExito";
         private const string ErrorMessageKey = "ErrorMessage";
         private const string PacienteIdSessionKey = "PacienteId";
+        private const long MaxPdfSize = 10 * 1024 * 1024; // 10 MB
 
-        public PacienteController(PacienteService pacienteService, ILogger<PacienteController> logger)
+        public PacienteController(PacienteService pacienteService, ILogger<PacienteController> logger,
+            RagService ragService)
         {
             _pacienteService = pacienteService;
             _logger = logger;
+            _ragService = ragService;
         }
 
         // -------------------------------------
@@ -453,11 +458,10 @@ namespace MedCitas.Web.Controllers
         // HISTORIA CLÍNICA
         // ============================================
 
-        private const long MaxPdfSize = 10 * 1024 * 1024; // 10 MB
-
         /// <summary>
         /// POST: /Paciente/SubirHistoriaClinica
-        /// Solo disponible si la cuenta está verificada
+        /// 1. Guarda el PDF en PostgreSQL (bytea)
+        /// 2. Vectoriza en Qdrant vía RAG API para consultas del chatbot
         /// </summary>
         [HttpPost]
         public async Task<IActionResult> SubirHistoriaClinica(IFormFile archivo)
@@ -466,7 +470,6 @@ namespace MedCitas.Web.Controllers
             if (string.IsNullOrEmpty(pacienteId))
                 return RedirectToAction(LoginAction);
 
-            // ✅ Validar que sea PDF
             if (archivo == null || archivo.Length == 0)
             {
                 TempData["ErrorHistoria"] = "Por favor selecciona un archivo PDF.";
@@ -480,7 +483,6 @@ namespace MedCitas.Web.Controllers
                 return RedirectToAction(nameof(Perfil));
             }
 
-            // ✅ Validar tamaño máximo (10 MB)
             if (archivo.Length > MaxPdfSize)
             {
                 TempData["ErrorHistoria"] = "El archivo no puede superar los 10 MB.";
@@ -489,24 +491,42 @@ namespace MedCitas.Web.Controllers
 
             try
             {
+                // Leer el archivo una sola vez en memoria
                 using var memoryStream = new MemoryStream();
                 await archivo.CopyToAsync(memoryStream);
                 var bytes = memoryStream.ToArray();
 
+                // ✅ PASO 1: Guardar en PostgreSQL
                 await _pacienteService.GuardarHistoriaClinicaAsync(
                     Guid.Parse(pacienteId),
                     bytes,
                     archivo.FileName);
 
-                _logger.LogInformation("Historia clínica subida por paciente {PacienteId}, archivo: {Archivo}",
+                _logger.LogInformation("Historia clínica guardada en BD para paciente {PacienteId}", pacienteId);
+
+                // ✅ PASO 2: Vectorizar en Qdrant vía RAG API
+                // Se usa un nuevo MemoryStream porque el anterior ya fue leído
+                using var ragStream = new MemoryStream(bytes);
+                await _ragService.CargarHistoriaAsync(pacienteId, ragStream, archivo.FileName);
+
+                _logger.LogInformation(
+                    "Historia clínica vectorizada en Qdrant para paciente {PacienteId}, archivo: {Archivo}",
                     pacienteId, archivo.FileName);
 
-                TempData[MensajeExitoKey] = "Historia clínica guardada exitosamente.";
+                TempData[MensajeExitoKey] = "Historia clínica guardada y procesada exitosamente. Ya puedes usarla en el chatbot.";
             }
             catch (InvalidOperationException ex)
             {
                 _logger.LogWarning(ex, "Error de validación al subir historia para paciente {PacienteId}", pacienteId);
                 TempData["ErrorHistoria"] = ex.Message;
+            }
+            catch (HttpRequestException ex)
+            {
+                // ✅ La historia se guardó en BD pero falló la vectorización
+                // No es un error crítico: el PDF está guardado, solo el chatbot no tendrá contexto
+                _logger.LogWarning(ex,
+                    "Historia guardada en BD pero falló vectorización RAG para paciente {PacienteId}", pacienteId);
+                TempData[MensajeExitoKey] = "Historia clínica guardada. El procesamiento para el chatbot estará disponible pronto.";
             }
             catch (Exception ex)
             {
@@ -519,6 +539,8 @@ namespace MedCitas.Web.Controllers
 
         /// <summary>
         /// POST: /Paciente/EliminarHistoriaClinica
+        /// 1. Elimina el PDF de PostgreSQL
+        /// 2. Elimina los embeddings de Qdrant
         /// </summary>
         [HttpPost]
         public async Task<IActionResult> EliminarHistoriaClinica()
@@ -529,9 +551,21 @@ namespace MedCitas.Web.Controllers
 
             try
             {
+                // ✅ PASO 1: Eliminar de PostgreSQL
                 await _pacienteService.EliminarHistoriaClinicaAsync(Guid.Parse(pacienteId));
+                _logger.LogInformation("Historia clínica eliminada de BD para paciente {PacienteId}", pacienteId);
 
-                _logger.LogInformation("Historia clínica eliminada por paciente {PacienteId}", pacienteId);
+                // ✅ PASO 2: Eliminar embeddings de Qdrant
+                await _ragService.EliminarHistoriaAsync(pacienteId);
+                _logger.LogInformation("Embeddings eliminados de Qdrant para paciente {PacienteId}", pacienteId);
+
+                TempData[MensajeExitoKey] = "Historia clínica eliminada correctamente.";
+            }
+            catch (HttpRequestException ex)
+            {
+                // La historia se eliminó de BD pero Qdrant no respondió (no crítico)
+                _logger.LogWarning(ex,
+                    "Historia eliminada de BD pero falló eliminación en Qdrant para paciente {PacienteId}", pacienteId);
                 TempData[MensajeExitoKey] = "Historia clínica eliminada correctamente.";
             }
             catch (Exception ex)
@@ -545,7 +579,6 @@ namespace MedCitas.Web.Controllers
 
         /// <summary>
         /// GET: /Paciente/DescargarHistoriaClinica
-        /// Permite al paciente descargar su propio PDF
         /// </summary>
         [HttpGet]
         public async Task<IActionResult> DescargarHistoriaClinica()
@@ -555,7 +588,6 @@ namespace MedCitas.Web.Controllers
                 return RedirectToAction(LoginAction);
 
             var resultado = await _pacienteService.ObtenerHistoriaClinicaAsync(Guid.Parse(pacienteId));
-
             if (resultado == null)
             {
                 TempData["ErrorHistoria"] = "No tienes una historia clínica cargada.";
@@ -564,7 +596,5 @@ namespace MedCitas.Web.Controllers
 
             return File(resultado.Value.Archivo, "application/pdf", resultado.Value.NombreArchivo);
         }
-
-
     }
 }

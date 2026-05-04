@@ -1,4 +1,4 @@
-using System;
+Ôªøusing System;
 using System.Threading.Tasks;
 using MedCitas.Core.Entities;
 using MedCitas.Core.Interfaces;
@@ -10,6 +10,7 @@ using Microsoft.AspNetCore.Mvc.ViewFeatures;
 using Microsoft.Extensions.Logging;
 using Moq;
 using Xunit;
+using MedCitas.Infrastructure.Services;
 
 namespace MedCitas.Tests.Controllers
 {
@@ -31,7 +32,10 @@ namespace MedCitas.Tests.Controllers
      _pacienteRepositoryMock.Object,
      _emailServiceMock.Object);
 
-            _controller = new PacienteController(_pacienteService, _loggerMock.Object);
+            // ‚úÖ Agregar Mock de RagService (requerido por el nuevo constructor)
+            var ragServiceMock = new Mock<RagService>(Mock.Of<HttpClient>());
+
+            _controller = new PacienteController(_pacienteService, _loggerMock.Object, ragServiceMock.Object);
 
             // Configurar HttpContext y TempData
          var httpContext = new DefaultHttpContext();
@@ -126,7 +130,7 @@ public void LoginGet_DeberiaRetornarView()
 
  var redirectResult = Assert.IsType<RedirectToActionResult>(resultado);
      Assert.Equal("Dashboard", redirectResult.ActionName);
-   Assert.Null(redirectResult.ControllerName); // Dashboard est· en el mismo controlador (Paciente)
+   Assert.Null(redirectResult.ControllerName); // Dashboard est√° en el mismo controlador (Paciente)
         }
 
         #endregion
@@ -355,7 +359,7 @@ var paciente = new Paciente();
 
             // Assert
         var viewResult = Assert.IsType<ViewResult>(resultado);
-    Assert.Contains("inv·lido", _controller.ViewBag.Error.ToString());
+    Assert.Contains("inv√°lido", _controller.ViewBag.Error.ToString());
         }
 
         #endregion
@@ -447,7 +451,7 @@ var paciente = new Paciente();
 
      // Assert
    var viewResult = Assert.IsType<ViewResult>(resultado);
- Assert.Contains("inv·lido", _controller.ViewBag.Resultado.ToString());
+ Assert.Contains("inv√°lido", _controller.ViewBag.Resultado.ToString());
         }
 
         #endregion
@@ -504,7 +508,7 @@ var paciente = new Paciente();
  .Setup(r => r.ObtenerPorTokenRecuperacionAsync("token"))
      .ReturnsAsync(paciente);
 
-     // Act (contraseÒas no coinciden)
+     // Act (contrase√±as no coinciden)
  var resultado = await _controller.RestablecerPassword("token", "Pass1!", "Pass2!");
 
  // Assert
