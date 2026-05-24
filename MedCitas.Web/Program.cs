@@ -4,6 +4,7 @@ using MedCitas.Core.Services;
 using MedCitas.Infrastructure.Repositories;
 using MedCitas.Infrastructure.Services;
 using MedCitas.Infrastructure.DataDb;
+using Microsoft.AspNetCore.HttpOverrides;
 using Microsoft.EntityFrameworkCore;
 
 var builder = WebApplication.CreateBuilder(args);
@@ -17,14 +18,31 @@ builder.Services.AddSession(options =>
     options.IdleTimeout = TimeSpan.FromMinutes(30);
     options.Cookie.HttpOnly = true;
     options.Cookie.IsEssential = true;
-    options.Cookie.SecurePolicy = CookieSecurePolicy.Always; // ? SEGURIDAD: Solo HTTPS
+    // SameAsRequest: Secure si la request llegó por HTTPS (VS local), HTTP si llegó por HTTP (ALB en AWS)
+    options.Cookie.SecurePolicy = CookieSecurePolicy.SameAsRequest;
 });
 
-builder.Services.AddHttpClient<RagService>(client =>
+// Registrar RagService solo si la URL está configurada
+// En producción (AWS) sin RAG desplegado, la URL apunta a un dummy
+// y el ChatbotController devuelve "offline" sin romper la app
+var ragApiUrl = builder.Configuration["RagApi:BaseUrl"];
+if (!string.IsNullOrWhiteSpace(ragApiUrl))
 {
-    client.BaseAddress = new Uri(builder.Configuration["RagApi:BaseUrl"]);
-    client.Timeout = TimeSpan.FromSeconds(180); // phi3 puede tardar
-});
+    builder.Services.AddHttpClient<RagService>(client =>
+    {
+        client.BaseAddress = new Uri(ragApiUrl);
+        client.Timeout = TimeSpan.FromSeconds(180); // phi3 puede tardar
+    });
+}
+else
+{
+    // Registrar con un BaseAddress vacío — HealthCheck devolverá false, app sigue funcionando
+    builder.Services.AddHttpClient<RagService>(client =>
+    {
+        client.BaseAddress = new Uri("http://localhost:9999");
+        client.Timeout = TimeSpan.FromSeconds(5);
+    });
+}
 
 // ? CONFIGURACIÓN DE EMAIL CON OPTIONS PATTERN
 builder.Services.Configure<EmailConfiguration>(builder.Configuration.GetSection("Email"));
@@ -78,7 +96,19 @@ if (!app.Environment.IsDevelopment())
     app.UseHsts();
 }
 
-app.UseHttpsRedirection();
+// Procesar cabeceras del ALB/proxy (X-Forwarded-For, X-Forwarded-Proto)
+// Necesario para que HTTPS, IPs de cliente y redirecciones funcionen correctamente detrás del ALB de AWS
+// En localhost no hay proxy, así que esta middleware no tiene efecto práctico
+app.UseForwardedHeaders(new ForwardedHeadersOptions
+{
+    ForwardedHeaders = ForwardedHeaders.XForwardedFor | ForwardedHeaders.XForwardedProto
+});
+
+// Solo redirigir a HTTPS en desarrollo — en producción el ALB termina TLS y habla HTTP con el contenedor
+if (app.Environment.IsDevelopment())
+{
+    app.UseHttpsRedirection();
+}
 app.UseStaticFiles();
 app.UseRouting();
 app.UseSession();
