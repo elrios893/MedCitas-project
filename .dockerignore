@@ -1,0 +1,64 @@
+# =============================================================
+# Directorios de compilación — nunca deben entrar a la imagen
+# =============================================================
+**/bin/
+**/obj/
+
+# =============================================================
+# Archivos de Visual Studio / IDEs
+# =============================================================
+**/.vs/
+**/*.user
+**/*.suo
+**/*.userosscache
+**/*.sln.docstates
+
+# =============================================================
+# Git
+# =============================================================
+.git/
+.gitattributes
+.gitignore
+
+# =============================================================
+# Configuraciones de entorno local — NO van al contenedor.
+# Las variables de entorno se inyectan en ECS Task Definition.
+# =============================================================
+**/appsettings.Development.json
+**/appsettings.*.json
+# Excepción: appsettings.json base y Production sí se incluyen
+!**/appsettings.json
+!**/appsettings.Production.json
+
+# User Secrets (nunca deben salir del equipo local)
+**/secrets.json
+
+# =============================================================
+# Proyecto de tests — no se necesita en la imagen de producción
+# =============================================================
+MedCitas.Tests/
+
+# =============================================================
+# Archivos de análisis y cobertura
+# =============================================================
+coverage/
+*.opencover.xml
+.sonarqube/
+*.ps1
+*.sh
+
+# =============================================================
+# GitHub Actions / CI (no necesarios en la imagen)
+# =============================================================
+.github/
+
+# =============================================================
+# Archivos del proyecto raíz que no aportan al build
+# =============================================================
+README.md
+cleanup-docs.ps1
+database-seed.sql
+run-coverage.ps1
+run-coverage.sh
+run-sonarqube-analysis.ps1
+run-tests-coverage.ps1
